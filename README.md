@@ -1,94 +1,99 @@
-# ✦ Hirely — AI Hiring Intelligence
+# Hirely
 
-> **Hire smarter. Hire better.**
-
-Hirely is a premium, AI-powered recruitment and candidate intelligence SaaS platform. It transforms raw candidate resumes and job requirements into structured, actionable hiring signals using Google Gemini AI (`gemini-3.6-flash`) and PostgreSQL.
+Hirely is an AI-powered hiring platform designed to streamline candidate screening and talent acquisition. It processes resumes and job descriptions, converting unstructured text into structured data using Google Gemini (`gemini-3.6-flash`). The backend evaluates how closely candidates align with job requirements, producing match scores from 1 to 10 along with detailed reasoning.
 
 ---
 
-## ✨ Features
+## Features
 
-- **✦ Modern Executive Dashboard:** Real-time KPI metrics, AI activity feeds, and recruitment analytics.
-- **📄 Resume Extraction & Intelligence:** Bulk upload PDF and TXT resumes. AI automatically parses candidates into structured JSON schemas.
-- **💼 Job Role Parsing:** Parse raw job descriptions into structured qualifications, technical skills, and candidate expectations.
-- **⚡ AI Screening Engine:** Automated candidate-to-job match scoring (1–10 scale) complete with explainable AI rationale.
-- **🔄 Local Zero-Config Database:** Runs seamlessly with embedded **PGlite** (local PostgreSQL in JS) out of the box, with seamless fallback to external PostgreSQL/Neon DB.
-- **🔍 Quick Navigation & Search:** Integrated command palette (`Ctrl + K`), search filters, and fast workspace navigation.
+- **Candidate Intelligence:** Parse PDF and plain text resumes into structured candidate profiles including skills, experience, education, and projects.
+- **Job Requirement Parsing:** Extract structured requirements, responsibilities, technical skills, and qualifications from raw job description text.
+- **AI Match Evaluation:** Evaluate candidate-role compatibility with a scoring system (1 to 10) and actionable feedback explaining the score.
+- **Embedded Local Database:** Runs out-of-the-box using PGlite (embedded PostgreSQL in Node.js) with optional support for external PostgreSQL database instances.
+- **Recruiter Dashboard:** Comprehensive overview of active job roles, uploaded candidates, screening results, and analytics.
+- **Workspace Navigation:** Fast keyboard-driven command palette (`Ctrl + K`) for quick navigation and global actions.
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
-| Layer | Technology |
+| Layer | Technologies |
 | --- | --- |
-| **Frontend** | React 19, React Router v7, Vite 8, Lucide Icons, Tailwind CSS v4 |
-| **Backend** | Node.js, Express 5 |
-| **Database** | Embedded PGlite (Zero-config PostgreSQL) / External PostgreSQL |
-| **AI Intelligence** | Google Gemini SDK (`@google/genai` with `gemini-3.6-flash`) |
-| **Document Processing** | Multer memory storage, `pdf-parse` |
+| Frontend | React 19, React Router v7, Vite 8, Tailwind CSS v4, Lucide Icons |
+| Backend | Node.js, Express 5 |
+| Database | PGlite (embedded PostgreSQL) / Standard PostgreSQL |
+| AI Integration | Google Gen AI SDK (`@google/genai` with `gemini-3.6-flash`) |
+| Parsing | Multer, pdf-parse |
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
-### 1. Clone the repository
+### Prerequisites
+
+- Node.js (v18 or higher)
+- Google Gemini API key
+
+### 1. Clone Repository
+
 ```bash
 git clone https://github.com/RohiVK/hirely.git
 cd hirely
 ```
 
-### 2. Configure Environment Variables
-Create a `.env` file inside the `backend` directory:
+### 2. Configure Environment
+
+Create a `.env` file in the `backend` folder:
+
 ```env
 GEMINI_API_KEY=your_gemini_api_key_here
 PORT=3000
-# DATABASE_URL=optional_external_postgres_url
+# DATABASE_URL=postgresql://user:password@localhost:5432/dbname (Optional)
 ```
 
-### 3. Run the Platform
+### 3. Run the Application
 
-#### Easy Startup (Windows)
-Run the included batch script from the root directory:
+#### Windows Batch File
+Double-click or execute `startup.bat` from the project root:
 ```cmd
 startup.bat
 ```
 
-#### Manual Startup
-In separate terminal windows:
+#### Manual Start
 
-* **Backend:**
-  ```bash
-  cd backend
-  npm install
-  npm run dev
-  ```
+1. Start the Backend API:
+   ```bash
+   cd backend
+   npm install
+   npm run dev
+   ```
 
-* **Frontend:**
-  ```bash
-  cd frontend
-  npm install
-  npm run dev
-  ```
+2. Start the Frontend Application:
+   ```bash
+   cd frontend
+   npm install
+   npm run dev
+   ```
 
-Open your browser and visit **`http://localhost:5173`**.
+Access the frontend application in your browser at `http://localhost:5173`.
 
 ---
 
-## 🛰️ API Endpoints
+## API Reference
 
 | Method | Endpoint | Description |
 | --- | --- | --- |
-| `GET` | `/health` | Application, Database & Gemini status check |
-| `POST` | `/api/resumes` | Parse & store candidate resumes |
-| `GET` | `/api/resumes` | Fetch candidate list |
-| `GET` | `/api/resumes/:id` | Get specific candidate details |
-| `POST` | `/api/job-descriptions` | Parse & store job role requirement |
-| `GET` | `/api/job-descriptions` | List active job roles |
-| `POST` | `/api/screenings` | Run AI screening match evaluation |
-| `GET` | `/api/screenings` | List match evaluations & scores |
+| GET | `/health` | Server, database, and AI service health status |
+| POST | `/api/resumes` | Upload and parse resumes |
+| GET | `/api/resumes` | Get all candidates |
+| GET | `/api/resumes/:id` | Get specific candidate by ID |
+| POST | `/api/job-descriptions` | Parse and create job description |
+| GET | `/api/job-descriptions` | Get all active job descriptions |
+| POST | `/api/screenings` | Run candidate screening for a job |
+| GET | `/api/screenings` | Get screening results |
 
 ---
 
-## 🔐 License
+## License
 
-Distributed under the MIT License.
+This project is licensed under the MIT License.
