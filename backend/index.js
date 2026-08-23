@@ -8,7 +8,7 @@ import { GoogleGenAI } from "@google/genai";
 import 'dotenv/config';
 
 const app = express();
-const ai = new GoogleGenAI();
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 app.use(cors());
 app.use(express.json());
@@ -22,7 +22,7 @@ app.get("/health", async (req, res) => {
 
   const [databaseCheck, geminiCheck] = await Promise.allSettled([
     db.query("SELECT 1"),
-    ai.models.get({ model: "gemini-2.5-flash" }),
+    ai.models.get({ model: "gemini-3.6-flash" }),
   ]);
 
   if (databaseCheck.status === "fulfilled") {

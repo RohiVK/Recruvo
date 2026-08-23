@@ -1,0 +1,7 @@
+node_modules/
+*.log
+.DS_Store
+backend/.env
+backend/hirely_pgdata/
+backend/test_pglite.js
+frontend/.env

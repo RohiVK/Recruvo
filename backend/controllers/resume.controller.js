@@ -5,7 +5,7 @@ import multer from "multer";
 import pdfParse from "pdf-parse";
 import "dotenv/config";
 
-const ai = new GoogleGenAI();
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -15,7 +15,7 @@ export { upload };
 
 async function getJsonFromResume(text) {
   const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash",
+    model: "gemini-3.6-flash",
 
     contents: `
 You are a resume extraction system.

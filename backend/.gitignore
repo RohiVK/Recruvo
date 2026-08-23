@@ -1,2 +1,4 @@
 node_modules
 .env
+hirely_pgdata
+test_pglite.js

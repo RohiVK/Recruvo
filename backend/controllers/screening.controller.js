@@ -5,11 +5,11 @@ import { screeningSchema } from "../models/gemini.schemas.js";
 import { GoogleGenAI } from "@google/genai";
 import "dotenv/config";
 
-const ai = new GoogleGenAI();
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 async function evaluateResume(resume, jobDescription) {
   const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash",
+    model: "gemini-3.6-flash",
 
     contents: `
 You are an AI resume screening system.
