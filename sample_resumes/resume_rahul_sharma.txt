@@ -1,0 +1,33 @@
+Rahul Sharma
+Software Engineer
+Email: rahul.sharma@email.com
+Phone: +91 98765 43210
+Location: Bangalore, India / Remote
+
+Professional Summary:
+Full stack software engineer with 5+ years of experience developing high-performance web applications, distributed APIs, and cloud services using Python, JavaScript, and AWS.
+
+Technical Skills:
+Python, Django, Flask, JavaScript, React, SQL, PostgreSQL, AWS (ECS, Lambda, S3, RDS), Docker, Git, REST APIs, Redis
+
+Work Experience:
+Senior Software Developer | Apex Cloud Technologies (2021 - Present)
+- Designed and maintained scalable RESTful microservices in Python and Django.
+- Developed interactive web frontend dashboards with React and Tailwind CSS.
+- Optimized PostgreSQL database queries, reducing average API response times by 35%.
+- Implemented CI/CD workflows and deployed microservices on AWS ECS containers.
+
+Software Engineer | Innovatech Solutions (2019 - 2021)
+- Built backend web services in Node.js and Python.
+- Integrated third-party APIs and managed relational schema migrations.
+
+Education:
+Bachelor of Technology (B.Tech) in Computer Science & Engineering
+National Institute of Technology (NIT) | 2015 - 2019
+
+Projects:
+- Distributed Event Streaming Platform: Built real-time analytics streaming engine using Python and Redis.
+- E-Commerce Microservices Engine: Designed multi-tenant order processing API with PostgreSQL and Docker.
+
+Certifications:
+- AWS Certified Solutions Architect Associate

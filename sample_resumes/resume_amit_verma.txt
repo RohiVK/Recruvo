@@ -1,0 +1,24 @@
+Amit Verma
+Frontend & Full Stack Developer
+Email: amit.verma@email.com
+Phone: +91 99887 76655
+Location: Hyderabad, India
+
+Professional Summary:
+Full stack developer with 3+ years of experience building modern web interfaces with React, Node.js, and TypeScript, backed by RESTful APIs and PostgreSQL databases.
+
+Technical Skills:
+JavaScript, TypeScript, React, Next.js, Node.js, Express, HTML5, CSS3, Tailwind CSS, PostgreSQL, Git, Webpack, Jest
+
+Work Experience:
+Full Stack Developer | Nexus Web Solutions (2021 - Present)
+- Developed responsive single-page web applications using React and TypeScript.
+- Created RESTful backend endpoints in Node.js and Express with PostgreSQL storage.
+- Collaborated closely with UI/UX designers to implement pixel-perfect user interfaces.
+
+Education:
+Bachelor of Technology in Information Technology | BITS Pilani | 2017 - 2021
+
+Projects:
+- Collaborative Task Management Portal: Real-time React dashboard with Node.js backend.
+- Customer Analytics Visualization Suite: Interactive charting UI with Tailwind CSS.

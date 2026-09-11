@@ -252,10 +252,74 @@ export const screeningSchema = {
   properties: {
     score: {
       type: "integer",
+      description: "Overall candidate match score from 1 to 10",
     },
     reason: {
       type: "string",
+      description: "Concise summary reasoning for the overall score",
+    },
+    technicalScore: {
+      type: "integer",
+      description: "Technical skills match score from 1 to 10",
+    },
+    experienceScore: {
+      type: "integer",
+      description: "Work experience and seniority match score from 1 to 10",
+    },
+    educationScore: {
+      type: "integer",
+      description: "Education and academic background match score from 1 to 10",
+    },
+    projectScore: {
+      type: "integer",
+      description: "Relevant projects and portfolio match score from 1 to 10",
+    },
+    jdMatchScore: {
+      type: "integer",
+      description: "Direct JD alignment score from 1 to 10",
+    },
+    matchingSkills: {
+      type: "array",
+      items: { type: "string" },
+      description: "List of candidate skills that directly match JD requirements",
+    },
+    missingSkills: {
+      type: "array",
+      items: { type: "string" },
+      description: "List of required or preferred skills missing from candidate profile",
+    },
+    strengths: {
+      type: "array",
+      items: { type: "string" },
+      description: "Key candidate strengths for this role",
+    },
+    weaknesses: {
+      type: "array",
+      items: { type: "string" },
+      description: "Key candidate gaps or areas of caution",
+    },
+    summary: {
+      type: "string",
+      description: "Comprehensive AI executive summary of candidate suitability",
+    },
+    interviewQuestions: {
+      type: "array",
+      items: { type: "string" },
+      description: "Tailored interview questions based on candidate profile and missing skills",
     },
   },
-  required: ["score", "reason"],
+  required: [
+    "score",
+    "reason",
+    "technicalScore",
+    "experienceScore",
+    "educationScore",
+    "projectScore",
+    "jdMatchScore",
+    "matchingSkills",
+    "missingSkills",
+    "strengths",
+    "weaknesses",
+    "summary",
+  ],
 };

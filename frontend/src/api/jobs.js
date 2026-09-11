@@ -1,34 +1,39 @@
-import { fetchApi } from "./client.js";
-
-export async function getJobDescriptions() {
-  const data = await fetchApi("/api/job-descriptions");
-  return data.jobs || [];
-}
-
-export async function getJobDescription(id) {
-  const data = await fetchApi(`/api/job-descriptions/${id}`);
-  return data.job;
-}
+import { fetchApi } from "./client";
 
 export async function createJobDescription(text) {
-  const data = await fetchApi("/api/job-descriptions", {
+  return fetchApi("/api/job-descriptions", {
     method: "POST",
     body: JSON.stringify({ text }),
   });
-  return data.job;
 }
 
-export async function updateJobDescription(id, jobData) {
-  const data = await fetchApi(`/api/job-descriptions/${id}`, {
-    method: "PUT",
-    body: JSON.stringify({ job: jobData }),
+export async function uploadJobDescriptionFile(file) {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  return fetchApi("/api/job-descriptions/upload", {
+    method: "POST",
+    body: formData,
   });
-  return data.job;
+}
+
+export async function getJobDescriptions() {
+  return fetchApi("/api/job-descriptions");
+}
+
+export async function getJobDescription(id) {
+  return fetchApi(`/api/job-descriptions/${id}`);
+}
+
+export async function updateJobDescription(id, job) {
+  return fetchApi(`/api/job-descriptions/${id}`, {
+    method: "PUT",
+    body: JSON.stringify({ job }),
+  });
 }
 
 export async function deleteJobDescription(id) {
-  const data = await fetchApi(`/api/job-descriptions/${id}`, {
+  return fetchApi(`/api/job-descriptions/${id}`, {
     method: "DELETE",
   });
-  return data;
 }

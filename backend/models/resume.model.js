@@ -42,6 +42,11 @@ const Resume = {
   },
 
   async delete(id) {
+    try {
+      await db.query("DELETE FROM screenings WHERE resume_id = $1", [id]);
+    } catch (e) {
+      console.warn("Screening cleanup warning:", e.message);
+    }
     const result = await db.query(
       `DELETE FROM resumes
        WHERE id = $1

@@ -1,28 +1,39 @@
-import { BrowserRouter, Routes, Route } from "react-router";
-import Overview from "./pages/Overview";
-import Candidates from "./pages/Candidates";
-import CandidateDetails from "./pages/CandidateDetails";
-import Jobs from "./pages/Jobs";
-import JobDetails from "./pages/JobDetails";
-import Screenings from "./pages/Screenings";
-import ScreeningDetails from "./pages/ScreeningDetails";
+import React from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router";
+import { RecruvoProvider } from "./context/RecruvoContext";
 import AppShell from "./components/layout/AppShell";
+import Dashboard from "./pages/Dashboard";
+import UploadJD from "./pages/UploadJD";
+import UploadResumes from "./pages/UploadResumes";
+import Analysis from "./pages/Analysis";
+import CandidateAnalysis from "./pages/CandidateAnalysis";
+import CompareCandidates from "./pages/CompareCandidates";
+import ExportResults from "./pages/ExportResults";
+import Settings from "./pages/Settings";
+import Feedback from "./pages/Feedback";
 
 function App() {
   return (
-    <BrowserRouter>
-      <AppShell>
-        <Routes>
-          <Route path="/" element={<Overview />} />
-          <Route path="/candidates" element={<Candidates />} />
-          <Route path="/candidates/:id" element={<CandidateDetails />} />
-          <Route path="/jobs" element={<Jobs />} />
-          <Route path="/jobs/:id" element={<JobDetails />} />
-          <Route path="/screenings" element={<Screenings />} />
-          <Route path="/screenings/:id" element={<ScreeningDetails />} />
-        </Routes>
-      </AppShell>
-    </BrowserRouter>
+    <RecruvoProvider>
+      <BrowserRouter>
+        <AppShell>
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/upload-jd" element={<UploadJD />} />
+            <Route path="/upload-resumes" element={<UploadResumes />} />
+            <Route path="/analysis" element={<Analysis />} />
+            <Route path="/analysis/:id" element={<CandidateAnalysis />} />
+            <Route path="/candidates/:id" element={<CandidateAnalysis />} />
+            <Route path="/compare" element={<CompareCandidates />} />
+            <Route path="/export" element={<ExportResults />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/feedback" element={<Feedback />} />
+            {/* Fallback */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </AppShell>
+      </BrowserRouter>
+    </RecruvoProvider>
   );
 }
 

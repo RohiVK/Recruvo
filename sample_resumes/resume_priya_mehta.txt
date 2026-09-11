@@ -1,0 +1,31 @@
+Priya Mehta
+Senior Backend Engineer
+Email: priya.mehta@email.com
+Phone: +91 91234 56789
+Location: Mumbai, India / Remote
+
+Professional Summary:
+Backend specialist and data platform engineer with 4+ years of expertise in Python, PostgreSQL database optimization, microservice architectures, and machine learning pipeline integration.
+
+Technical Skills:
+Python, FastAPI, Django, PostgreSQL, Docker, Kubernetes, AWS, Machine Learning, Scikit-Learn, Pandas, Git, CI/CD, GraphQL
+
+Work Experience:
+Backend Engineer | DataWave Labs (2022 - Present)
+- Engineered scalable data ingestion microservices handling 10M+ daily records in Python and FastAPI.
+- Tuned PostgreSQL queries and partitioning strategies for low-latency analytics.
+- Deployed containerized applications on Kubernetes clusters in AWS environment.
+
+Junior Software Engineer | CloudSoft Systems (2020 - 2022)
+- Built internal tooling and automated ETL jobs in Python.
+
+Education:
+Master of Science in Computer Science | Indian Institute of Technology (IIT) | 2018 - 2020
+Bachelor of Engineering in Information Technology | Mumbai University | 2014 - 2018
+
+Projects:
+- AI Resume Parser & Ranking Engine: Developed NLP extraction model using Python.
+- Real-time Fraud Detection Pipeline: Built streaming anomaly detection system.
+
+Certifications:
+- Certified Kubernetes Application Developer (CKAD)

@@ -42,6 +42,11 @@ const JobDescription = {
   },
 
   async delete(id) {
+    try {
+      await db.query("DELETE FROM screenings WHERE jd_id = $1", [id]);
+    } catch (e) {
+      console.warn("Screening cleanup warning:", e.message);
+    }
     const result = await db.query(
       `DELETE FROM job_descriptions
        WHERE id = $1
