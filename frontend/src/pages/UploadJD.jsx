@@ -1,798 +1,670 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router";
 import {
+  UploadCloud,
   FileText,
-  Upload,
   Sparkles,
   CheckCircle2,
   AlertCircle,
-  ArrowRight,
   RefreshCw,
   Briefcase,
+  MapPin,
+  Clock,
   Layers,
-  GraduationCap,
-  Award,
   Edit3,
   Trash2,
   X,
-  Check,
+  ArrowRight,
+  Plus,
+  Zap,
 } from "lucide-react";
 import { useRecruvo } from "../context/RecruvoContext";
+import BentoCard from "../components/ui/BentoCard";
 
 export default function UploadJD() {
   const navigate = useNavigate();
-  const { uploadJobText, uploadJobFile, updateJob, deleteJob, activeJob, setActiveJob, jobs } = useRecruvo();
+  const { uploadJobText, uploadJobFile, activeJob, jobs, setActiveJob, updateJob, deleteJob, theme } = useRecruvo();
+  const isGenz = theme === "genz";
 
-  const [activeTab, setActiveTab] = useState("paste"); // "paste" | "upload"
+  const [inputMode, setInputMode] = useState("upload"); // upload | paste
   const [jdText, setJdText] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
-  const [successToast, setSuccessToast] = useState(null);
-  const [extractedJob, setExtractedJob] = useState(activeJob || null);
+  const [successMessage, setSuccessMessage] = useState(null);
+  const [isDragOver, setIsDragOver] = useState(false);
 
   // Edit JD Modal State
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [editingJobId, setEditingJobId] = useState(null);
-  const [editFormData, setEditFormData] = useState({
-    title: "",
-    company: "",
-    location: "",
-    experience_required: "",
-    summary: "",
-    required_skills: "",
-    preferred_skills: "",
-  });
-  const [isSavingEdit, setIsSavingEdit] = useState(false);
+  const [editingJob, setEditingJob] = useState(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editCompany, setEditCompany] = useState("");
+  const [editLocation, setEditLocation] = useState("");
+  const [editExperience, setEditExperience] = useState("");
+  const [editReqSkills, setEditReqSkills] = useState("");
+  const [editPrefSkills, setEditPrefSkills] = useState("");
+  const [editSummary, setEditSummary] = useState("");
+  const [isUpdating, setIsUpdating] = useState(false);
 
-  // Delete Confirm State
+  // Delete JD Modal State
   const [deletingJobId, setDeletingJobId] = useState(null);
 
-  const sampleJd = `Senior Full Stack Engineer
-Company: CloudScale Dynamics
-Location: Remote / San Francisco, CA
-Employment Type: Full-time
-
-About the Role:
-We are seeking a seasoned Senior Full Stack Engineer to spearhead our cloud platform development. You will architect scalable backend microservices, design responsive modern interfaces, and collaborate with cross-functional product teams.
-
-Key Responsibilities:
-- Design and develop robust RESTful APIs and asynchronous event-driven microservices.
-- Build clean, performant, and responsive frontends using React and modern CSS.
-- Maintain PostgreSQL database schemas, query optimizations, and data migrations.
-- Implement CI/CD deployment pipelines using Docker, Kubernetes, and AWS services.
-- Lead architectural code reviews and mentor junior engineering team members.
-
-Required Skills & Qualifications:
-- 5+ years of professional full stack software development experience.
-- Strong proficiency in Python, JavaScript / TypeScript, Node.js, and React.
-- Solid hands-on experience with PostgreSQL, relational modeling, and query tuning.
-- Demonstrated cloud infrastructure experience with AWS (ECS, Lambda, S3, RDS).
-- Bachelor's degree in Computer Science, Software Engineering, or equivalent practical experience.
-
-Preferred Skills:
-- Experience with Kubernetes and container orchestration.
-- Familiarity with GraphQL, Redis caching, and WebSocket real-time systems.
-- Experience in high-growth B2B SaaS environments.`;
-
-  const handlePasteSubmit = async (e) => {
-    e.preventDefault();
-    if (!jdText.trim() || isProcessing) return;
-
-    setIsProcessing(true);
-    setErrorMessage(null);
-
-    try {
-      const job = await uploadJobText(jdText);
-      setExtractedJob(job);
-      setSuccessToast("Job description successfully parsed and saved!");
-      setTimeout(() => setSuccessToast(null), 3000);
-    } catch (err) {
-      setErrorMessage(err.message || "Failed to process job description. Please ensure text is valid.");
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
   const handleFileChange = (e) => {
-    if (e.target.files && e.target.files[0]) {
-      setSelectedFile(e.target.files[0]);
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
       setErrorMessage(null);
     }
   };
 
-  const handleFileUploadSubmit = async (e) => {
+  const handleDrop = (e) => {
     e.preventDefault();
-    if (!selectedFile || isProcessing) return;
+    setIsDragOver(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      setErrorMessage(null);
+    }
+  };
 
-    setIsProcessing(true);
+  const handleProcess = async () => {
     setErrorMessage(null);
+    setSuccessMessage(null);
+    setIsProcessing(true);
 
     try {
-      const job = await uploadJobFile(selectedFile);
-      setExtractedJob(job);
-      setSuccessToast(`Job description "${selectedFile.name}" successfully parsed and saved!`);
-      setTimeout(() => setSuccessToast(null), 3000);
+      let createdJob = null;
+      if (inputMode === "paste") {
+        if (!jdText.trim()) {
+          throw new Error("Please paste Job Description text first.");
+        }
+        createdJob = await uploadJobText(jdText);
+      } else {
+        if (!selectedFile) {
+          throw new Error("Please choose or drop a Job Description file (PDF, DOCX, TXT).");
+        }
+        createdJob = await uploadJobFile(selectedFile);
+      }
+
+      setSuccessMessage(`Job Description successfully parsed and activated!`);
+      setSelectedFile(null);
+      setJdText("");
     } catch (err) {
-      setErrorMessage(err.message || "Failed to parse job description file.");
+      setErrorMessage(err.message || "Failed to process Job Description");
     } finally {
       setIsProcessing(false);
     }
   };
 
-  // Open Edit Modal
-  const handleOpenEdit = (jobToEdit = extractedJob) => {
-    if (!jobToEdit) return;
-    const details = jobToEdit.job_description || jobToEdit;
-    setEditingJobId(jobToEdit.id);
-    setEditFormData({
-      title: details.title || "",
-      company: details.company || "",
-      location: details.location || "",
-      experience_required: details.experience_required || "",
-      summary: details.summary || "",
-      required_skills: Array.isArray(details.required_skills)
-        ? details.required_skills.join(", ")
-        : details.required_skills || "",
-      preferred_skills: Array.isArray(details.preferred_skills)
-        ? details.preferred_skills.join(", ")
-        : details.preferred_skills || "",
-    });
-    setIsEditModalOpen(true);
+  const openEditModal = (job) => {
+    const jd = job.job_description || {};
+    setEditingJob(job);
+    setEditTitle(jd.title || "");
+    setEditCompany(jd.company || "");
+    setEditLocation(jd.location || "");
+    setEditExperience(jd.experience_required || "");
+    setEditReqSkills(Array.isArray(jd.required_skills) ? jd.required_skills.join(", ") : "");
+    setEditPrefSkills(Array.isArray(jd.preferred_skills) ? jd.preferred_skills.join(", ") : "");
+    setEditSummary(jd.summary || "");
   };
 
-  // Save JD Edit
-  const handleSaveEdit = async (e) => {
-    e.preventDefault();
-    if (!editingJobId || isSavingEdit) return;
-
-    setIsSavingEdit(true);
-    setErrorMessage(null);
-
+  const handleSaveEdit = async () => {
+    if (!editingJob) return;
+    setIsUpdating(true);
     try {
-      const target = jobs.find((j) => String(j.id) === String(editingJobId)) || extractedJob;
-      const baseDetails = target?.job_description || target || {};
-
-      const reqSkills = editFormData.required_skills
-        .split(",")
-        .map((s) => s.trim())
-        .filter(Boolean);
-
-      const prefSkills = editFormData.preferred_skills
-        .split(",")
-        .map((s) => s.trim())
-        .filter(Boolean);
-
-      const updatedJobPayload = {
-        ...baseDetails,
-        title: editFormData.title.trim(),
-        company: editFormData.company.trim(),
-        location: editFormData.location.trim(),
-        experience_required: editFormData.experience_required.trim(),
-        summary: editFormData.summary.trim(),
-        required_skills: reqSkills,
-        preferred_skills: prefSkills,
+      const updatedJd = {
+        title: editTitle.trim(),
+        company: editCompany.trim(),
+        location: editLocation.trim(),
+        experience_required: editExperience.trim(),
+        required_skills: editReqSkills.split(",").map((s) => s.trim()).filter(Boolean),
+        preferred_skills: editPrefSkills.split(",").map((s) => s.trim()).filter(Boolean),
+        summary: editSummary.trim(),
+        responsibilities: editingJob.job_description?.responsibilities || [],
       };
-
-      const updated = await updateJob(editingJobId, updatedJobPayload);
-      setExtractedJob(updated);
-      setIsEditModalOpen(false);
-      setSuccessToast("Job description updated successfully!");
-      setTimeout(() => setSuccessToast(null), 3000);
+      await updateJob(editingJob.id, updatedJd);
+      setEditingJob(null);
+      setSuccessMessage("Job requisition updated successfully!");
+      setTimeout(() => setSuccessMessage(null), 3500);
     } catch (err) {
-      setErrorMessage(err.message || "Failed to update job description.");
+      setErrorMessage(err.message || "Failed to update job description");
     } finally {
-      setIsSavingEdit(false);
+      setIsUpdating(false);
     }
   };
 
-  // Delete JD
-  const handleDeleteJob = async (jobId) => {
+  const handleDeleteJob = async (id) => {
     try {
-      await deleteJob(jobId);
-      if (extractedJob && String(extractedJob.id) === String(jobId)) {
-        const remaining = jobs.filter((j) => String(j.id) !== String(jobId));
-        setExtractedJob(remaining.length > 0 ? remaining[0] : null);
-      }
+      await deleteJob(id);
       setDeletingJobId(null);
-      setSuccessToast("Job description deleted successfully.");
-      setTimeout(() => setSuccessToast(null), 3000);
+      setSuccessMessage("Job requisition and related screenings deleted.");
+      setTimeout(() => setSuccessMessage(null), 3500);
     } catch (err) {
-      setErrorMessage(err.message || "Failed to delete job description.");
+      setErrorMessage(err.message || "Failed to delete job requisition");
     }
   };
-
-  const jobDetails = extractedJob?.job_description || extractedJob || null;
 
   return (
-    <div className="space-y-6 animate-fadeIn max-w-5xl mx-auto">
-      {/* Page Header */}
+    <div className="space-y-8 animate-fadeIn max-w-6xl mx-auto">
+      {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-gray-900">Upload Job Description</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
-            Paste the job description text or upload a document (PDF, DOCX, TXT) to establish the hiring baseline.
+          <h1 className="text-2xl font-bold tracking-tight">Job Requisition Management</h1>
+          <p className={`text-xs md:text-sm mt-0.5 ${isGenz ? "text-slate-400" : "text-slate-500"}`}>
+            Upload or paste job requisitions. Recruvo AI extracts technical skills, experience requirements, and responsibilities.
           </p>
         </div>
 
         {activeJob && (
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gray-100 border border-gray-200 text-xs font-semibold text-gray-800 shrink-0">
-            <Briefcase className="w-3.5 h-3.5 text-gray-600" />
-            <span>Active JD: {activeJob.job_description?.title || "Job #" + activeJob.id}</span>
+          <div
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full border text-xs font-semibold ${
+              isGenz
+                ? "bg-indigo-500/10 border-indigo-500/30 text-indigo-300"
+                : "bg-slate-50 border-slate-200 text-slate-800"
+            }`}
+          >
+            <Briefcase className="w-3.5 h-3.5 opacity-60" />
+            <span>Active: {activeJob.job_description?.title || "Job #" + activeJob.id}</span>
           </div>
         )}
       </div>
 
-      {successToast && (
-        <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center gap-2 animate-fadeIn">
-          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-          <span>{successToast}</span>
-        </div>
-      )}
-
-      {errorMessage && (
-        <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center justify-between animate-fadeIn">
+      {/* Input Mode Tabs & Dropzone Card */}
+      <BentoCard className="p-6 md:p-8">
+        {/* Toggle Mode Segment */}
+        <div className="flex items-center justify-between border-b pb-4 mb-6 border-white/[0.08]">
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                setInputMode("upload");
+                setErrorMessage(null);
+              }}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                inputMode === "upload"
+                  ? isGenz
+                    ? "bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-xs"
+                    : "bg-slate-900 text-white"
+                  : isGenz
+                  ? "text-slate-400 hover:text-white"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+              }`}
+            >
+              Upload JD File (PDF, DOCX, TXT)
+            </button>
+
+            <button
+              onClick={() => {
+                setInputMode("paste");
+                setErrorMessage(null);
+              }}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                inputMode === "paste"
+                  ? isGenz
+                    ? "bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-xs"
+                    : "bg-slate-900 text-white"
+                  : isGenz
+                  ? "text-slate-400 hover:text-white"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+              }`}
+            >
+              Paste Requisition Text
+            </button>
+          </div>
+
+          <span className={`text-[11px] font-mono hidden sm:inline ${isGenz ? "text-slate-400" : "text-slate-400"}`}>
+            Supports PDF, DOCX, TXT
+          </span>
+        </div>
+
+        {/* Upload Mode Area */}
+        {inputMode === "upload" ? (
+          <div
+            onDragOver={(e) => {
+              e.preventDefault();
+              setIsDragOver(true);
+            }}
+            onDragLeave={() => setIsDragOver(false)}
+            onDrop={handleDrop}
+            className={`border-2 border-dashed rounded-2xl p-8 md:p-12 text-center transition-all ${
+              isDragOver
+                ? isGenz
+                  ? "border-indigo-400 bg-indigo-500/10 shadow-[0_0_25px_rgba(99,102,241,0.3)]"
+                  : "border-slate-900 bg-slate-50"
+                : isGenz
+                ? "border-white/10 hover:border-indigo-500/40 bg-white/[0.02]"
+                : "border-slate-200 hover:border-slate-300 bg-slate-50/50"
+            }`}
+          >
+            <input
+              type="file"
+              id="jd-file-input"
+              accept=".pdf,.docx,.doc,.txt,.md"
+              onChange={handleFileChange}
+              className="hidden"
+            />
+            <label htmlFor="jd-file-input" className="cursor-pointer block">
+              <div
+                className={`w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4 transition-all ${
+                  isGenz
+                    ? "bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)]"
+                    : "bg-slate-100 text-slate-800 border border-slate-200"
+                }`}
+              >
+                <UploadCloud className="w-7 h-7" />
+              </div>
+              <h3 className="text-base font-bold mb-1">
+                {selectedFile ? selectedFile.name : "Drag & drop Job Description file"}
+              </h3>
+              <p className={`text-xs max-w-sm mx-auto mb-4 ${isGenz ? "text-slate-400" : "text-slate-500"}`}>
+                {selectedFile
+                  ? `${(selectedFile.size / 1024).toFixed(1)} KB • Ready to extract`
+                  : "Click to browse or drop PDF, DOCX, TXT requisitions"}
+              </p>
+              <span
+                className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold border transition-all ${
+                  isGenz
+                    ? "bg-white/[0.05] border-white/10 text-slate-200 hover:bg-white/10"
+                    : "bg-white border-slate-200 text-slate-800 hover:bg-slate-100"
+                }`}
+              >
+                Choose File
+              </span>
+            </label>
+          </div>
+        ) : (
+          /* Paste Mode Area */
+          <div className="space-y-3">
+            <label
+              className={`block text-xs font-bold uppercase tracking-wider ${
+                isGenz ? "text-slate-400" : "text-slate-600"
+              }`}
+            >
+              Paste Job Description Text
+            </label>
+            <textarea
+              value={jdText}
+              onChange={(e) => setJdText(e.target.value)}
+              placeholder="Paste job title, required technical skills, experience requirements, and responsibilities here..."
+              rows={8}
+              className={`w-full text-xs rounded-xl p-4 focus:outline-none transition-all resize-y border font-mono ${
+                isGenz
+                  ? "bg-[#141724] border-white/10 text-slate-100 placeholder-slate-500 focus:border-indigo-500/80 focus:ring-1 focus:ring-indigo-500/40"
+                  : "bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 focus:border-slate-900 focus:ring-1 focus:ring-slate-900"
+              }`}
+            />
+          </div>
+        )}
+
+        {/* Error / Success Banners */}
+        {errorMessage && (
+          <div
+            className={`mt-4 p-3.5 rounded-xl border text-xs flex items-center gap-2.5 ${
+              isGenz
+                ? "bg-rose-950/40 border-rose-500/40 text-rose-300"
+                : "bg-rose-50 border-rose-200 text-rose-700"
+            }`}
+          >
             <AlertCircle className="w-4 h-4 shrink-0" />
             <span>{errorMessage}</span>
           </div>
-          <button
-            onClick={() => setErrorMessage(null)}
-            className="text-xs text-red-700 underline font-semibold"
+        )}
+
+        {successMessage && (
+          <div
+            className={`mt-4 p-3.5 rounded-xl border text-xs flex items-center justify-between ${
+              isGenz
+                ? "bg-emerald-950/40 border-emerald-500/40 text-emerald-300"
+                : "bg-emerald-50 border-emerald-200 text-emerald-800"
+            }`}
           >
-            Dismiss
+            <div className="flex items-center gap-2.5">
+              <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
+              <span>{successMessage}</span>
+            </div>
+            <button
+              onClick={() => navigate("/upload-resumes")}
+              className="font-bold underline text-xs ml-2 hover:opacity-80 flex items-center gap-1"
+            >
+              <span>Next: Upload Resumes</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
+
+        {/* Process Button */}
+        <div className="mt-6 flex justify-end">
+          <button
+            onClick={handleProcess}
+            disabled={isProcessing || (inputMode === "upload" && !selectedFile) || (inputMode === "paste" && !jdText.trim())}
+            className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl text-xs font-bold transition-all disabled:opacity-40 shadow-sm ${
+              isGenz
+                ? "bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white shadow-[0_0_20px_-3px_rgba(99,102,241,0.5)]"
+                : "bg-slate-900 text-white hover:bg-black"
+            }`}
+          >
+            {isProcessing ? (
+              <>
+                <RefreshCw className="w-4 h-4 animate-spin" />
+                <span>Extracting Structured JD...</span>
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-4 h-4" />
+                <span>Parse & Extract Job Description</span>
+              </>
+            )}
           </button>
         </div>
-      )}
+      </BentoCard>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left Column: Upload Form */}
-        <div className="lg:col-span-6 space-y-4">
-          <div className="bg-white border border-gray-200 rounded-2xl shadow-xs overflow-hidden">
-            {/* Tabs Header */}
-            <div className="flex border-b border-gray-200 bg-gray-50/70 p-1.5">
-              <button
-                type="button"
-                onClick={() => setActiveTab("paste")}
-                className={`flex-1 py-2 text-xs font-semibold rounded-lg flex items-center justify-center gap-2 transition-all ${
-                  activeTab === "paste"
-                    ? "bg-white text-gray-900 shadow-xs border border-gray-200/80"
-                    : "text-gray-500 hover:text-gray-900"
-                }`}
-              >
-                <FileText className="w-3.5 h-3.5" />
-                Paste Text
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab("upload")}
-                className={`flex-1 py-2 text-xs font-semibold rounded-lg flex items-center justify-center gap-2 transition-all ${
-                  activeTab === "upload"
-                    ? "bg-white text-gray-900 shadow-xs border border-gray-200/80"
-                    : "text-gray-500 hover:text-gray-900"
-                }`}
-              >
-                <Upload className="w-3.5 h-3.5" />
-                Upload File
-              </button>
-            </div>
+      {/* Requisitions Roster & Active JD Preview */}
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-base font-bold flex items-center gap-2">
+            <Briefcase className="w-4 h-4 text-indigo-500" />
+            Stored Job Descriptions ({jobs.length})
+          </h2>
+          <span className={`text-xs ${isGenz ? "text-slate-400" : "text-slate-500"}`}>
+            Select active requisition to ground screening
+          </span>
+        </div>
 
-            {/* Paste Text Tab */}
-            {activeTab === "paste" && (
-              <form onSubmit={handlePasteSubmit} className="p-5 space-y-4">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-semibold text-gray-700">Job Description Text</label>
-                  <button
-                    type="button"
-                    onClick={() => setJdText(sampleJd)}
-                    className="text-[11px] text-gray-600 hover:text-gray-900 font-medium underline"
-                  >
-                    Load Sample JD
-                  </button>
-                </div>
+        {jobs.length === 0 ? (
+          <BentoCard className="p-8 text-center">
+            <FileText className="w-8 h-8 opacity-40 mx-auto mb-2" />
+            <p className="font-bold text-sm">No Job Descriptions stored yet</p>
+            <p className={`text-xs mt-1 ${isGenz ? "text-slate-400" : "text-slate-500"}`}>
+              Upload or paste a JD above to begin candidate matching.
+            </p>
+          </BentoCard>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {jobs.map((j) => {
+              const jd = j.job_description || {};
+              const isActive = activeJob?.id === j.id;
 
-                <textarea
-                  value={jdText}
-                  onChange={(e) => setJdText(e.target.value)}
-                  placeholder="Paste complete job description, requirements, responsibilities, and required qualifications here..."
-                  rows={14}
-                  required
-                  className="w-full text-xs text-gray-800 bg-gray-50 border border-gray-200 rounded-xl p-3 focus:outline-none focus:ring-1 focus:ring-gray-900 focus:bg-white transition-all font-mono leading-relaxed resize-none"
-                />
-
-                <div className="flex items-center justify-between pt-1">
-                  <span className="text-[11px] text-gray-400">
-                    {jdText.length} characters
-                  </span>
-                  <button
-                    type="submit"
-                    disabled={!jdText.trim() || isProcessing}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gray-900 text-white hover:bg-black text-xs font-semibold shadow-xs transition-all disabled:opacity-40"
-                  >
-                    {isProcessing ? (
-                      <>
-                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                        Extracting with Gemini...
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="w-3.5 h-3.5" />
-                        Extract Criteria
-                      </>
-                    )}
-                  </button>
-                </div>
-              </form>
-            )}
-
-            {/* Upload File Tab */}
-            {activeTab === "upload" && (
-              <form onSubmit={handleFileUploadSubmit} className="p-5 space-y-4">
-                <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center bg-gray-50/50 hover:bg-gray-50 transition-colors">
-                  <div className="w-12 h-12 rounded-xl bg-white border border-gray-200 shadow-2xs flex items-center justify-center mx-auto mb-3 text-gray-800">
-                    <Upload className="w-6 h-6 text-gray-700" />
-                  </div>
-                  <p className="text-xs font-semibold text-gray-800 mb-1">
-                    Select or drag & drop Job Description file
-                  </p>
-                  <p className="text-[11px] text-gray-400 mb-4">
-                    Supports PDF, DOCX, DOC, TXT (up to 15MB)
-                  </p>
-
-                  <label className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-gray-300 text-xs font-semibold text-gray-700 hover:bg-gray-50 cursor-pointer transition-colors shadow-xs">
-                    <span>Browse Files</span>
-                    <input
-                      type="file"
-                      accept=".pdf,.docx,.doc,.txt"
-                      onChange={handleFileChange}
-                      className="hidden"
-                    />
-                  </label>
-                </div>
-
-                {selectedFile && (
-                  <div className="p-3 bg-gray-50 border border-gray-200 rounded-xl flex items-center justify-between">
-                    <div className="flex items-center gap-2.5 overflow-hidden">
-                      <FileText className="w-4 h-4 text-gray-600 shrink-0" />
-                      <div className="truncate">
-                        <p className="text-xs font-semibold text-gray-800 truncate">{selectedFile.name}</p>
-                        <p className="text-[10px] text-gray-400">
-                          {(selectedFile.size / 1024).toFixed(1)} KB
-                        </p>
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setSelectedFile(null)}
-                      className="text-xs text-gray-400 hover:text-gray-600 ml-2"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                )}
-
-                <div className="pt-2 flex justify-end">
-                  <button
-                    type="submit"
-                    disabled={!selectedFile || isProcessing}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gray-900 text-white hover:bg-black text-xs font-semibold shadow-xs transition-all disabled:opacity-40"
-                  >
-                    {isProcessing ? (
-                      <>
-                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                        Extracting file with Gemini...
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="w-3.5 h-3.5" />
-                        Parse Document
-                      </>
-                    )}
-                  </button>
-                </div>
-              </form>
-            )}
-          </div>
-
-          {/* Stored JDs list with Edit and Delete options */}
-          {jobs.length > 0 && (
-            <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-xs">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-gray-500">
-                  Saved Job Descriptions ({jobs.length})
-                </h3>
-                <span className="text-[10px] text-gray-400">Select, Edit or Delete</span>
-              </div>
-              <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
-                {jobs.map((j) => {
-                  const isSelected = extractedJob?.id === j.id;
-                  const jTitle = j.job_description?.title || `Job #${j.id}`;
-                  const jCompany = j.job_description?.company || "Company";
-
-                  return (
-                    <div
-                      key={j.id}
-                      className={`p-2.5 rounded-xl text-xs flex items-center justify-between border transition-all ${
-                        isSelected
-                          ? "bg-gray-900 text-white border-gray-900 shadow-xs"
-                          : "bg-gray-50 text-gray-800 border-gray-200/80 hover:bg-gray-100"
-                      }`}
-                    >
-                      <button
-                        onClick={() => {
-                          setActiveJob(j);
-                          setExtractedJob(j);
-                        }}
-                        className="text-left flex-1 min-w-0 pr-2"
-                      >
-                        <p className="font-semibold truncate">{jTitle}</p>
-                        <p className={`text-[10px] truncate ${isSelected ? "text-gray-300" : "text-gray-500"}`}>
-                          {jCompany} • ID #{j.id}
-                        </p>
-                      </button>
-
-                      <div className="flex items-center gap-1 shrink-0">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleOpenEdit(j);
-                          }}
-                          className={`p-1.5 rounded-lg transition-colors ${
-                            isSelected
-                              ? "hover:bg-gray-800 text-gray-200"
-                              : "hover:bg-gray-200 text-gray-600"
+              return (
+                <BentoCard
+                  key={j.id}
+                  highlight={isActive}
+                  className={`p-5 flex flex-col justify-between transition-all ${
+                    isActive
+                      ? isGenz
+                        ? "border-indigo-500/60 shadow-[0_0_25px_-5px_rgba(99,102,241,0.3)]"
+                        : "border-slate-900 shadow-sm"
+                      : ""
+                  }`}
+                >
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`text-xs font-bold px-2.5 py-0.5 rounded-full border ${
+                            isActive
+                              ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40 font-black"
+                              : isGenz
+                              ? "bg-white/[0.04] text-slate-400 border-white/10"
+                              : "bg-slate-100 text-slate-600 border-slate-200"
                           }`}
-                          title="Edit Job Description"
+                        >
+                          {isActive ? "ACTIVE REQUISITION" : `JD #${j.id}`}
+                        </span>
+                      </div>
+
+                      {/* Action buttons (Edit & Delete) */}
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          onClick={() => openEditModal(j)}
+                          className={`p-1.5 rounded-lg text-xs transition-colors ${
+                            isGenz
+                              ? "text-slate-400 hover:text-indigo-300 hover:bg-white/[0.06]"
+                              : "text-slate-500 hover:text-slate-900 hover:bg-slate-100"
+                          }`}
+                          title="Edit Requisition"
                         >
                           <Edit3 className="w-3.5 h-3.5" />
                         </button>
-
                         <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setDeletingJobId(j.id);
-                          }}
-                          className={`p-1.5 rounded-lg transition-colors ${
-                            isSelected
-                              ? "hover:bg-red-900/60 text-red-300"
-                              : "hover:bg-red-50 text-red-600"
+                          onClick={() => setDeletingJobId(j.id)}
+                          className={`p-1.5 rounded-lg text-xs transition-colors ${
+                            isGenz
+                              ? "text-slate-400 hover:text-rose-400 hover:bg-rose-500/10"
+                              : "text-slate-500 hover:text-rose-600 hover:bg-rose-50"
                           }`}
-                          title="Delete Job Description"
+                          title="Delete Requisition"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
                     </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-        </div>
 
-        {/* Right Column: Extracted JD View & Actions */}
-        <div className="lg:col-span-6">
-          {jobDetails ? (
-            <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-xs space-y-5">
-              {/* Header Details */}
-              <div className="pb-4 border-b border-gray-200 flex items-start justify-between gap-3">
-                <div>
-                  <div className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200 mb-2">
-                    <CheckCircle2 className="w-3 h-3" />
-                    Structured Job Profile Extracted
+                    <h3 className="text-base font-bold tracking-tight">{jd.title || "Job Description"}</h3>
+                    <p className={`text-xs mt-0.5 ${isGenz ? "text-indigo-300" : "text-slate-600"}`}>
+                      {jd.company || "Company"} • {jd.location || "Remote"}
+                    </p>
+
+                    <div className="mt-3 space-y-1.5 text-xs">
+                      <div className="flex justify-between">
+                        <span className={isGenz ? "text-slate-400" : "text-slate-500"}>Experience:</span>
+                        <span className="font-semibold">{jd.experience_required || "5+ years"}</span>
+                      </div>
+                    </div>
+
+                    {/* Required Skills Pills */}
+                    <div className="mt-3 flex flex-wrap gap-1">
+                      {(jd.required_skills || []).slice(0, 5).map((sk, idx) => (
+                        <span
+                          key={idx}
+                          className={`px-2 py-0.5 rounded-full text-[10.5px] font-medium border ${
+                            isGenz
+                              ? "bg-indigo-500/10 border-indigo-500/30 text-indigo-300"
+                              : "bg-slate-100 border-slate-200 text-slate-700"
+                          }`}
+                        >
+                          {sk}
+                        </span>
+                      ))}
+                    </div>
+
+                    {jd.summary && (
+                      <p className={`mt-3 text-xs leading-relaxed line-clamp-2 ${isGenz ? "text-slate-400" : "text-slate-500"}`}>
+                        {jd.summary}
+                      </p>
+                    )}
                   </div>
-                  <h2 className="text-xl font-bold text-gray-900">{jobDetails.title || "Untitled Role"}</h2>
-                  <p className="text-xs text-gray-500 mt-0.5">
-                    {jobDetails.company || "Company"} • {jobDetails.location || "Remote"} •{" "}
-                    {jobDetails.employment_type || "Full-time"}
-                  </p>
-                </div>
 
-                <div className="flex items-center gap-1.5 shrink-0">
-                  <button
-                    onClick={() => handleOpenEdit(extractedJob)}
-                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors shadow-2xs"
-                    title="Edit this Job Description"
-                  >
-                    <Edit3 className="w-3.5 h-3.5" />
-                    <span>Edit</span>
-                  </button>
-
-                  <button
-                    onClick={() => setDeletingJobId(extractedJob.id)}
-                    className="p-1.5 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 transition-colors shadow-2xs"
-                    title="Delete this Job Description"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-
-                  <button
-                    onClick={() => setActiveJob(extractedJob)}
-                    className={`px-3 py-1.5 rounded-lg border text-xs font-semibold transition-colors shadow-2xs ${
-                      activeJob?.id === extractedJob?.id
-                        ? "bg-emerald-50 border-emerald-200 text-emerald-800"
-                        : "border-gray-300 text-gray-700 hover:bg-gray-50"
-                    }`}
-                  >
-                    {activeJob?.id === extractedJob?.id ? "Active JD ✓" : "Set Active"}
-                  </button>
-                </div>
-              </div>
-
-              {/* Role Summary */}
-              {jobDetails.summary && (
-                <div>
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1.5">Summary</h4>
-                  <p className="text-xs text-gray-700 leading-relaxed bg-gray-50 p-3 rounded-xl border border-gray-100">
-                    {jobDetails.summary}
-                  </p>
-                </div>
-              )}
-
-              {/* Requirements & Experience */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
-                  <span className="text-[10px] font-semibold text-gray-400 uppercase">Experience</span>
-                  <p className="text-xs font-bold text-gray-800 mt-0.5">
-                    {jobDetails.experience_required || "Not specified"}
-                  </p>
-                </div>
-                <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
-                  <span className="text-[10px] font-semibold text-gray-400 uppercase">Education</span>
-                  <p className="text-xs font-bold text-gray-800 mt-0.5">
-                    {Array.isArray(jobDetails.education) && jobDetails.education.length > 0
-                      ? jobDetails.education.join(", ")
-                      : "Bachelor's Degree or Equivalent"}
-                  </p>
-                </div>
-              </div>
-
-              {/* Required Skills */}
-              {Array.isArray(jobDetails.required_skills) && jobDetails.required_skills.length > 0 && (
-                <div>
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">
-                    Required Skills ({jobDetails.required_skills.length})
-                  </h4>
-                  <div className="flex flex-wrap gap-1.5">
-                    {jobDetails.required_skills.map((skill, idx) => (
-                      <span
-                        key={idx}
-                        className="px-2.5 py-1 rounded-lg text-xs font-medium bg-gray-900 text-white"
+                  <div className="mt-5 pt-3 border-t border-white/[0.06] flex items-center justify-between">
+                    {!isActive ? (
+                      <button
+                        onClick={() => setActiveJob(j)}
+                        className={`text-xs font-bold py-1.5 px-3 rounded-lg border transition-all ${
+                          isGenz
+                            ? "bg-white/[0.04] border-white/10 text-slate-200 hover:border-indigo-500/40 hover:bg-indigo-600/20 hover:text-white"
+                            : "bg-white border-slate-200 text-slate-800 hover:bg-slate-100"
+                        }`}
                       >
-                        {skill}
+                        Set as Active Requisition
+                      </button>
+                    ) : (
+                      <span className="text-xs font-bold text-emerald-500 flex items-center gap-1">
+                        <CheckCircle2 className="w-3.5 h-3.5" /> Active in Workspace
                       </span>
-                    ))}
+                    )}
+
+                    <NavLink
+                      to="/analysis"
+                      className={`text-xs font-bold flex items-center gap-1 hover:underline ${
+                        isGenz ? "text-indigo-400" : "text-slate-900"
+                      }`}
+                    >
+                      <span>Analyze Candidates</span>
+                      <ArrowRight className="w-3 h-3" />
+                    </NavLink>
                   </div>
-                </div>
-              )}
-
-              {/* Preferred Skills */}
-              {Array.isArray(jobDetails.preferred_skills) && jobDetails.preferred_skills.length > 0 && (
-                <div>
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">
-                    Preferred Skills ({jobDetails.preferred_skills.length})
-                  </h4>
-                  <div className="flex flex-wrap gap-1.5">
-                    {jobDetails.preferred_skills.map((skill, idx) => (
-                      <span
-                        key={idx}
-                        className="px-2.5 py-1 rounded-lg text-xs font-medium bg-gray-100 text-gray-700 border border-gray-200"
-                      >
-                        {skill}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Responsibilities */}
-              {Array.isArray(jobDetails.responsibilities) && jobDetails.responsibilities.length > 0 && (
-                <div>
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">
-                    Key Responsibilities
-                  </h4>
-                  <ul className="space-y-1.5">
-                    {jobDetails.responsibilities.slice(0, 5).map((resp, idx) => (
-                      <li key={idx} className="text-xs text-gray-600 flex items-start gap-2">
-                        <span className="w-1.5 h-1.5 rounded-full bg-gray-400 mt-1.5 shrink-0" />
-                        <span>{resp}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {/* Next Step CTA */}
-              <div className="pt-4 border-t border-gray-200 flex justify-end">
-                <button
-                  onClick={() => {
-                    setActiveJob(extractedJob);
-                    navigate("/upload-resumes");
-                  }}
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gray-900 text-white hover:bg-black text-xs font-bold shadow-sm transition-all"
-                >
-                  <span>Next: Upload Resumes</span>
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="bg-white border border-gray-200 rounded-2xl p-12 text-center shadow-xs">
-              <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-3 text-gray-400">
-                <Briefcase className="w-6 h-6" />
-              </div>
-              <h3 className="text-sm font-bold text-gray-800 mb-1">No Job Description Extracted Yet</h3>
-              <p className="text-xs text-gray-400 max-w-sm mx-auto">
-                Paste text or upload a job specification document on the left to extract structured hiring
-                criteria using Recruvo's AI engine.
-              </p>
-            </div>
-          )}
-        </div>
+                </BentoCard>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* EDIT JOB DESCRIPTION MODAL */}
-      {isEditModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn">
-          <div className="bg-white border border-gray-200 rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+      {editingJob && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn">
+          <div
+            className={`w-full max-w-xl rounded-2xl border p-6 shadow-2xl max-h-[90vh] overflow-y-auto ${
+              isGenz ? "bg-[#141726] border-white/10 text-slate-100" : "bg-white border-slate-200 text-slate-900"
+            }`}
+          >
+            <div className="flex items-center justify-between border-b pb-3 mb-4 border-white/[0.08]">
               <div className="flex items-center gap-2">
-                <Edit3 className="w-4 h-4 text-gray-900" />
-                <h3 className="text-base font-bold text-gray-900">Edit Job Description</h3>
+                <Edit3 className="w-4 h-4 text-indigo-400" />
+                <h3 className="text-sm font-bold">Edit Job Requisition #{editingJob.id}</h3>
               </div>
               <button
-                onClick={() => setIsEditModalOpen(false)}
-                className="text-gray-400 hover:text-gray-700 p-1"
+                onClick={() => setEditingJob(null)}
+                className="p-1 rounded-lg hover:opacity-60"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <form onSubmit={handleSaveEdit} className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-bold text-gray-700 mb-1">Job Title</label>
-                  <input
-                    type="text"
-                    required
-                    value={editFormData.title}
-                    onChange={(e) => setEditFormData({ ...editFormData, title: e.target.value })}
-                    className="w-full text-xs bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-gray-700 mb-1">Company</label>
-                  <input
-                    type="text"
-                    required
-                    value={editFormData.company}
-                    onChange={(e) => setEditFormData({ ...editFormData, company: e.target.value })}
-                    className="w-full text-xs bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900"
-                  />
-                </div>
+            <div className="space-y-3.5 text-xs">
+              <div>
+                <label className="block font-bold mb-1 opacity-80">Job Title</label>
+                <input
+                  type="text"
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                  className={`w-full rounded-xl p-2.5 border ${
+                    isGenz ? "bg-[#1A1D2F] border-white/10 text-slate-100" : "bg-slate-50 border-slate-200"
+                  }`}
+                />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 mb-1">Location / Mode</label>
+                  <label className="block font-bold mb-1 opacity-80">Company</label>
                   <input
                     type="text"
-                    value={editFormData.location}
-                    onChange={(e) => setEditFormData({ ...editFormData, location: e.target.value })}
-                    className="w-full text-xs bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900"
+                    value={editCompany}
+                    onChange={(e) => setEditCompany(e.target.value)}
+                    className={`w-full rounded-xl p-2.5 border ${
+                      isGenz ? "bg-[#1A1D2F] border-white/10 text-slate-100" : "bg-slate-50 border-slate-200"
+                    }`}
                   />
                 </div>
-
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 mb-1">Experience Required</label>
+                  <label className="block font-bold mb-1 opacity-80">Location</label>
                   <input
                     type="text"
-                    value={editFormData.experience_required}
-                    onChange={(e) =>
-                      setEditFormData({ ...editFormData, experience_required: e.target.value })
-                    }
-                    className="w-full text-xs bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900"
+                    value={editLocation}
+                    onChange={(e) => setEditLocation(e.target.value)}
+                    className={`w-full rounded-xl p-2.5 border ${
+                      isGenz ? "bg-[#1A1D2F] border-white/10 text-slate-100" : "bg-slate-50 border-slate-200"
+                    }`}
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-gray-700 mb-1">
-                  Required Skills (comma separated)
-                </label>
+                <label className="block font-bold mb-1 opacity-80">Experience Required</label>
                 <input
                   type="text"
-                  value={editFormData.required_skills}
-                  onChange={(e) =>
-                    setEditFormData({ ...editFormData, required_skills: e.target.value })
-                  }
-                  placeholder="Python, React, AWS, SQL"
-                  className="w-full text-xs bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900"
+                  value={editExperience}
+                  onChange={(e) => setEditExperience(e.target.value)}
+                  className={`w-full rounded-xl p-2.5 border ${
+                    isGenz ? "bg-[#1A1D2F] border-white/10 text-slate-100" : "bg-slate-50 border-slate-200"
+                  }`}
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-gray-700 mb-1">
-                  Preferred Skills (comma separated)
-                </label>
+                <label className="block font-bold mb-1 opacity-80">Required Skills (Comma-separated)</label>
                 <input
                   type="text"
-                  value={editFormData.preferred_skills}
-                  onChange={(e) =>
-                    setEditFormData({ ...editFormData, preferred_skills: e.target.value })
-                  }
-                  placeholder="Docker, Kubernetes, Redis"
-                  className="w-full text-xs bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900"
+                  value={editReqSkills}
+                  onChange={(e) => setEditReqSkills(e.target.value)}
+                  className={`w-full rounded-xl p-2.5 border ${
+                    isGenz ? "bg-[#1A1D2F] border-white/10 text-slate-100" : "bg-slate-50 border-slate-200"
+                  }`}
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-gray-700 mb-1">Role Summary</label>
+                <label className="block font-bold mb-1 opacity-80">Preferred Skills (Optional)</label>
+                <input
+                  type="text"
+                  value={editPrefSkills}
+                  onChange={(e) => setEditPrefSkills(e.target.value)}
+                  className={`w-full rounded-xl p-2.5 border ${
+                    isGenz ? "bg-[#1A1D2F] border-white/10 text-slate-100" : "bg-slate-50 border-slate-200"
+                  }`}
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold mb-1 opacity-80">Summary</label>
                 <textarea
-                  rows={4}
-                  value={editFormData.summary}
-                  onChange={(e) => setEditFormData({ ...editFormData, summary: e.target.value })}
-                  className="w-full text-xs bg-gray-50 border border-gray-200 rounded-xl p-3 text-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900 resize-none"
+                  value={editSummary}
+                  onChange={(e) => setEditSummary(e.target.value)}
+                  rows={3}
+                  className={`w-full rounded-xl p-2.5 border resize-none ${
+                    isGenz ? "bg-[#1A1D2F] border-white/10 text-slate-100" : "bg-slate-50 border-slate-200"
+                  }`}
                 />
               </div>
+            </div>
 
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-gray-100">
-                <button
-                  type="button"
-                  onClick={() => setIsEditModalOpen(false)}
-                  className="px-4 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSavingEdit}
-                  className="inline-flex items-center gap-1.5 px-5 py-2 rounded-xl bg-gray-900 text-white text-xs font-bold hover:bg-black transition-colors disabled:opacity-50"
-                >
-                  {isSavingEdit ? (
-                    <>
-                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                      Saving...
-                    </>
-                  ) : (
-                    <>
-                      <Check className="w-3.5 h-3.5" />
-                      Save Changes
-                    </>
-                  )}
-                </button>
-              </div>
-            </form>
+            <div className="flex items-center justify-end gap-2.5 mt-6 pt-3 border-t border-white/[0.08]">
+              <button
+                onClick={() => setEditingJob(null)}
+                className="px-4 py-2 rounded-xl text-xs font-semibold border border-white/10 hover:opacity-80"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveEdit}
+                disabled={isUpdating}
+                className={`px-5 py-2 rounded-xl text-xs font-bold text-white transition-all ${
+                  isGenz ? "bg-indigo-600 hover:bg-indigo-500 shadow-xs" : "bg-slate-900 hover:bg-black"
+                }`}
+              >
+                {isUpdating ? "Saving..." : "Save Changes"}
+              </button>
+            </div>
           </div>
         </div>
       )}
 
-      {/* DELETE CONFIRMATION MODAL */}
+      {/* DELETE JOB CONFIRMATION MODAL */}
       {deletingJobId && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn">
-          <div className="bg-white border border-gray-200 rounded-2xl max-w-sm w-full p-6 shadow-2xl space-y-4">
-            <div className="w-10 h-10 rounded-xl bg-red-50 text-red-600 flex items-center justify-center">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn">
+          <div
+            className={`w-full max-w-sm rounded-2xl border p-6 shadow-2xl space-y-4 ${
+              isGenz ? "bg-[#141726] border-white/10 text-slate-100" : "bg-white border-slate-200 text-slate-900"
+            }`}
+          >
+            <div className="w-10 h-10 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center">
               <Trash2 className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-gray-900">Delete Job Description</h3>
-              <p className="text-xs text-gray-500 mt-1">
-                Are you sure you want to delete this Job Description (ID #{deletingJobId})? Associated candidate screenings for this job will also be cleaned up.
+              <h3 className="text-sm font-bold">Delete Job Requisition</h3>
+              <p className={`text-xs mt-1 ${isGenz ? "text-slate-400" : "text-slate-500"}`}>
+                Are you sure you want to delete JD #{deletingJobId}? All associated screening analyses will also be removed.
               </p>
             </div>
-            <div className="flex items-center justify-end gap-2 pt-2">
+            <div className="flex items-center justify-end gap-2.5 pt-2">
               <button
                 onClick={() => setDeletingJobId(null)}
-                className="px-3.5 py-1.5 rounded-lg border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50"
+                className="px-3.5 py-1.5 rounded-lg border border-white/10 text-xs font-semibold hover:opacity-80"
               >
                 Cancel
               </button>
               <button
                 onClick={() => handleDeleteJob(deletingJobId)}
-                className="px-4 py-1.5 rounded-lg bg-red-600 text-white text-xs font-bold hover:bg-red-700"
+                className="px-4 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-xs"
               >
-                Delete Job
+                Delete
               </button>
             </div>
           </div>

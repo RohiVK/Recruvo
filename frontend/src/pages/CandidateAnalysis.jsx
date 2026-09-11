@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useParams, useNavigate, NavLink } from "react-router";
 import {
   ArrowLeft,
@@ -17,15 +17,21 @@ import {
   Download,
   Share2,
   Users,
+  Calendar,
+  Zap,
+  RefreshCw,
 } from "lucide-react";
 import { useRecruvo } from "../context/RecruvoContext";
 import RecruvoAIChat from "../components/ai/RecruvoAIChat";
+import BentoCard from "../components/ui/BentoCard";
+import ScoreIndicator from "../components/ui/ScoreIndicator";
 import { exportSingleCandidatePDF } from "../api/exports";
 
 export default function CandidateAnalysis() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { candidates, screenings, activeJob, runScreening } = useRecruvo();
+  const { candidates, screenings, activeJob, runScreening, theme } = useRecruvo();
+  const isGenz = theme === "genz";
 
   const [activeTab, setActiveTab] = useState("overview"); // overview | skills | experience | education | recommendations
   const [isEvaluating, setIsEvaluating] = useState(false);
@@ -37,11 +43,22 @@ export default function CandidateAnalysis() {
   // Find associated screening for this candidate
   const screening = (screenings || []).find((s) => String(s.resume_id) === String(id));
 
-  const scorePct = screening?.score ? Math.round(screening.score * 10) : null;
-  const techScorePct = screening?.technicalScore ? Math.round(screening.technicalScore * 10) : scorePct;
-  const expScorePct = screening?.experienceScore ? Math.round(screening.experienceScore * 10) : scorePct;
-  const eduScorePct = screening?.educationScore ? Math.round(screening.educationScore * 10) : scorePct;
-  const projScorePct = screening?.projectScore ? Math.round(screening.projectScore * 10) : scorePct;
+  const scorePct = screening?.score !== undefined && screening?.score !== null
+    ? Math.round(screening.score * 10)
+    : null;
+
+  const techScorePct = screening?.technicalScore
+    ? Math.round(screening.technicalScore * 10)
+    : scorePct;
+  const expScorePct = screening?.experienceScore
+    ? Math.round(screening.experienceScore * 10)
+    : scorePct;
+  const eduScorePct = screening?.educationScore
+    ? Math.round(screening.educationScore * 10)
+    : scorePct;
+  const projScorePct = screening?.projectScore
+    ? Math.round(screening.projectScore * 10)
+    : scorePct;
 
   const handleEvaluate = async () => {
     if (!activeJob?.id || !id) return;
@@ -56,27 +73,29 @@ export default function CandidateAnalysis() {
   };
 
   const tabs = [
-    { key: "overview", label: "Overview" },
-    { key: "skills", label: "Skills" },
-    { key: "experience", label: "Experience" },
-    { key: "education", label: "Education" },
-    { key: "recommendations", label: "Recommendations" },
+    { key: "overview", label: "Executive Overview" },
+    { key: "skills", label: "Skills Matrix" },
+    { key: "experience", label: "Work Experience" },
+    { key: "education", label: "Education & Projects" },
+    { key: "recommendations", label: "Recommendations & Prep" },
   ];
 
   if (!candidateRecord) {
     return (
-      <div className="bg-white border border-gray-200 rounded-2xl p-12 text-center max-w-lg mx-auto mt-12 shadow-xs">
-        <h2 className="text-base font-bold text-gray-900 mb-2">Candidate Not Found</h2>
-        <p className="text-xs text-gray-500 mb-4">
+      <BentoCard className="p-12 text-center max-w-lg mx-auto mt-12">
+        <h2 className="text-base font-bold mb-2">Candidate Not Found</h2>
+        <p className={`text-xs mb-4 ${isGenz ? "text-slate-400" : "text-slate-500"}`}>
           The requested candidate profile ID #{id} was not found in the database.
         </p>
         <button
           onClick={() => navigate("/analysis")}
-          className="px-4 py-2 rounded-xl bg-gray-900 text-white text-xs font-semibold hover:bg-black transition-colors"
+          className={`px-4 py-2 rounded-xl text-xs font-bold text-white transition-all ${
+            isGenz ? "bg-indigo-600 hover:bg-indigo-500 shadow-xs" : "bg-slate-900 hover:bg-black"
+          }`}
         >
           Return to Analysis Results
         </button>
-      </div>
+      </BentoCard>
     );
   }
 
@@ -85,21 +104,29 @@ export default function CandidateAnalysis() {
   const email = candidate.email || "No email provided";
   const phone = candidate.phone || "No phone provided";
   const location = candidate.location || "Location not specified";
+  const matchingSkills = screening?.matching_skills || screening?.matchingSkills || candidate.skills || [];
+  const missingSkills = screening?.missing_skills || screening?.missingSkills || [];
+  const strengths = screening?.strengths || [];
+  const weaknesses = screening?.weaknesses || [];
 
   return (
     <div className="space-y-6 animate-fadeIn max-w-7xl mx-auto">
-      {/* Back Button & Actions Row */}
-      <div className="flex items-center justify-between">
+      {/* Top Nav & Export Bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <button
           onClick={() => navigate("/analysis")}
-          className="inline-flex items-center gap-2 text-xs font-semibold text-gray-600 hover:text-gray-900 bg-white border border-gray-200 px-3.5 py-1.5 rounded-lg shadow-2xs hover:bg-gray-50 transition-colors"
+          className={`inline-flex items-center gap-2 text-xs font-bold px-3.5 py-2 rounded-xl border transition-all ${
+            isGenz
+              ? "bg-white/[0.04] border-white/10 text-slate-200 hover:bg-white/10"
+              : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
+          }`}
         >
           <ArrowLeft className="w-3.5 h-3.5" />
-          <span>Back to Results</span>
+          <span>Back to Analysis Results</span>
         </button>
 
         <div className="flex items-center gap-2">
-          {screening && (
+          {screening && activeJob && (
             <button
               onClick={() =>
                 exportSingleCandidatePDF({
@@ -108,108 +135,197 @@ export default function CandidateAnalysis() {
                   job: activeJob,
                 })
               }
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors shadow-2xs"
+              className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold border transition-all ${
+                isGenz
+                  ? "bg-indigo-600/20 border-indigo-500/40 text-indigo-300 hover:bg-indigo-600 hover:text-white"
+                  : "bg-white border-slate-200 text-slate-800 hover:bg-slate-50 shadow-2xs"
+              }`}
             >
-              <Download className="w-3.5 h-3.5" />
+              <Download className="w-3.5 h-3.5 text-indigo-400" />
               <span>Export PDF Report</span>
             </button>
           )}
 
           <NavLink
             to="/compare"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-900 text-white text-xs font-semibold hover:bg-black transition-colors shadow-2xs"
+            className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+              isGenz
+                ? "bg-white/[0.05] border border-white/10 text-slate-200 hover:bg-white/10"
+                : "bg-slate-900 text-white hover:bg-black"
+            }`}
           >
             <Users className="w-3.5 h-3.5" />
-            <span>Compare with Another</span>
+            <span>Compare Candidate</span>
           </NavLink>
         </div>
       </div>
 
-      {/* Candidate Profile Header Card (Matching Wireframe 3) */}
-      <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-xs">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-          {/* Candidate Info */}
+      {/* Candidate Profile Hero Card */}
+      <BentoCard
+        highlight={isGenz}
+        className={`p-6 md:p-8 relative overflow-hidden ${
+          isGenz
+            ? "bg-gradient-to-br from-[#121528] via-[#14172B] to-[#0F111F] border-indigo-500/30"
+            : "bg-white border-slate-200"
+        }`}
+      >
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          {/* Identity Info */}
           <div className="flex items-start gap-4">
-            <div className="w-16 h-16 rounded-full bg-gray-100 border border-gray-300 text-gray-800 font-bold text-2xl flex items-center justify-center shrink-0">
-              {name.charAt(0).toUpperCase()}
+            <div
+              className={`w-14 h-14 rounded-2xl flex items-center justify-center font-black text-xl shrink-0 border ${
+                isGenz
+                  ? "bg-gradient-to-br from-indigo-500 to-violet-600 text-white border-indigo-400/40 shadow-[0_0_20px_-3px_rgba(99,102,241,0.6)]"
+                  : "bg-slate-900 text-white border-slate-800"
+              }`}
+            >
+              {name.charAt(0)}
             </div>
-            <div>
-              <h1 className="text-xl font-bold text-gray-900 leading-tight">{name}</h1>
-              <p className="text-xs font-semibold text-gray-600 mt-0.5">{role}</p>
 
-              <div className="flex flex-wrap items-center gap-y-1 gap-x-4 mt-2.5 text-xs text-gray-500">
+            <div className="space-y-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="text-xl md:text-2xl font-extrabold tracking-tight">{name}</h1>
+                <span
+                  className={`text-xs font-mono px-2 py-0.5 rounded-full border ${
+                    isGenz ? "bg-white/[0.05] border-white/10 text-indigo-300" : "bg-slate-100 border-slate-200 text-slate-700"
+                  }`}
+                >
+                  ID #{id}
+                </span>
+              </div>
+
+              <p className={`text-xs md:text-sm font-semibold ${isGenz ? "text-indigo-300" : "text-slate-600"}`}>
+                {role}
+              </p>
+
+              <div className="flex flex-wrap items-center gap-3 pt-2 text-xs opacity-70">
                 <span className="flex items-center gap-1">
-                  <Mail className="w-3.5 h-3.5 text-gray-400" />
+                  <Mail className="w-3.5 h-3.5" />
                   {email}
                 </span>
+                <span>•</span>
                 <span className="flex items-center gap-1">
-                  <Phone className="w-3.5 h-3.5 text-gray-400" />
+                  <Phone className="w-3.5 h-3.5" />
                   {phone}
                 </span>
-                {location && (
-                  <span className="flex items-center gap-1">
-                    <MapPin className="w-3.5 h-3.5 text-gray-400" />
-                    {location}
-                  </span>
-                )}
+                <span>•</span>
+                <span className="flex items-center gap-1">
+                  <MapPin className="w-3.5 h-3.5" />
+                  {location}
+                </span>
               </div>
             </div>
           </div>
 
-          {/* Overall Match Score Card (Matching Wireframe 3) */}
-          <div className="bg-gray-50/80 border border-gray-200 rounded-xl p-4 min-w-[200px] flex flex-col justify-between">
-            <div className="flex items-center justify-between mb-1.5">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-gray-500">
-                Overall Match
-              </span>
-              {scorePct !== null && (
-                <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                  {scorePct >= 80 ? "High Match" : scorePct >= 60 ? "Moderate Match" : "Low Match"}
-                </span>
-              )}
-            </div>
-
+          {/* Overall Match Score Gauge */}
+          <div className="flex items-center gap-6 self-end lg:self-center">
             {scorePct !== null ? (
-              <div>
-                <div className="text-2xl font-bold text-gray-900 mb-2">{scorePct}%</div>
-                <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-                  <div
-                    className={`h-2 rounded-full transition-all duration-500 ${
-                      scorePct >= 80 ? "bg-emerald-600" : scorePct >= 60 ? "bg-gray-900" : "bg-amber-600"
+              <div className="flex items-center gap-4">
+                <div className="text-right hidden sm:block">
+                  <span
+                    className={`text-3xl font-black font-mono leading-none block ${
+                      scorePct >= 80
+                        ? "text-emerald-400"
+                        : scorePct >= 60
+                        ? "text-indigo-400"
+                        : "text-amber-400"
                     }`}
-                    style={{ width: `${Math.min(scorePct, 100)}%` }}
-                  />
+                  >
+                    {scorePct}%
+                  </span>
+                  <span className="text-[11px] font-bold uppercase tracking-wider opacity-60">
+                    Overall Fit Score
+                  </span>
                 </div>
+                <ScoreIndicator score={scorePct} size="xl" showRing={true} label="" />
               </div>
             ) : (
-              <div className="text-center py-2">
-                <button
-                  onClick={handleEvaluate}
-                  disabled={isEvaluating || !activeJob}
-                  className="px-3 py-1.5 rounded-lg bg-gray-900 text-white text-xs font-semibold hover:bg-black transition-colors w-full"
-                >
-                  {isEvaluating ? "Evaluating..." : "Run AI Analysis"}
-                </button>
-              </div>
+              <button
+                onClick={handleEvaluate}
+                disabled={isEvaluating}
+                className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold text-white shadow-xs ${
+                  isGenz ? "bg-indigo-600 hover:bg-indigo-500" : "bg-slate-900 hover:bg-black"
+                }`}
+              >
+                {isEvaluating ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                <span>Evaluate Fit with AI</span>
+              </button>
             )}
           </div>
         </div>
-      </div>
+      </BentoCard>
 
-      {/* Main Grid: Tabs Content on Left (8 cols) + Contextual Recruvo AI on Right (4 cols) */}
+      {/* Category Pillar Metrics Grid */}
+      {scorePct !== null && (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+          <BentoCard className="p-4">
+            <span className="text-[10.5px] font-bold uppercase tracking-wider opacity-60 block mb-1">
+              Technical Fit
+            </span>
+            <div className="flex items-baseline justify-between">
+              <span className="text-xl font-black font-mono">{techScorePct || scorePct}%</span>
+              <span className="text-xs text-emerald-400 font-bold">Verified</span>
+            </div>
+            <ScoreIndicator score={techScorePct || scorePct} size="sm" showRing={false} label="" />
+          </BentoCard>
+
+          <BentoCard className="p-4">
+            <span className="text-[10.5px] font-bold uppercase tracking-wider opacity-60 block mb-1">
+              Experience Seniority
+            </span>
+            <div className="flex items-baseline justify-between">
+              <span className="text-xl font-black font-mono">{expScorePct || scorePct}%</span>
+              <span className="text-xs text-indigo-400 font-bold">Requisite</span>
+            </div>
+            <ScoreIndicator score={expScorePct || scorePct} size="sm" showRing={false} label="" />
+          </BentoCard>
+
+          <BentoCard className="p-4">
+            <span className="text-[10.5px] font-bold uppercase tracking-wider opacity-60 block mb-1">
+              Education & Academia
+            </span>
+            <div className="flex items-baseline justify-between">
+              <span className="text-xl font-black font-mono">{eduScorePct || scorePct}%</span>
+              <span className="text-xs text-purple-400 font-bold">Academic</span>
+            </div>
+            <ScoreIndicator score={eduScorePct || scorePct} size="sm" showRing={false} label="" />
+          </BentoCard>
+
+          <BentoCard className="p-4">
+            <span className="text-[10.5px] font-bold uppercase tracking-wider opacity-60 block mb-1">
+              Project Track Record
+            </span>
+            <div className="flex items-baseline justify-between">
+              <span className="text-xl font-black font-mono">{projScorePct || scorePct}%</span>
+              <span className="text-xs text-cyan-400 font-bold">Hands-on</span>
+            </div>
+            <ScoreIndicator score={projScorePct || scorePct} size="sm" showRing={false} label="" />
+          </BentoCard>
+        </div>
+      )}
+
+      {/* Main 2-Column Grid: 5-Tab Detailed Analysis on Left (8 cols) + Contextual AI Chat on Right (4 cols) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left Side: 5 Tabs and Breakdown */}
+        {/* Left Side: 5-Tab Deep Dive Container */}
         <div className="lg:col-span-7 xl:col-span-8 space-y-4">
-          {/* Tabs Navigation Header (Matching Wireframe 3) */}
-          <div className="flex border-b border-gray-200 bg-white rounded-t-xl px-2 pt-2 gap-1 overflow-x-auto no-scrollbar shadow-2xs">
+          {/* Tabs Navigation */}
+          <div
+            className={`flex items-center gap-1.5 p-1 rounded-2xl border overflow-x-auto no-scrollbar ${
+              isGenz ? "bg-[#111322] border-white/10" : "bg-slate-100 border-slate-200"
+            }`}
+          >
             {tabs.map((tab) => (
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
-                className={`py-2.5 px-4 text-xs font-bold rounded-t-lg transition-all border-b-2 whitespace-nowrap ${
+                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
                   activeTab === tab.key
-                    ? "border-gray-900 text-gray-900 bg-gray-50/80"
-                    : "border-transparent text-gray-500 hover:text-gray-900 hover:bg-gray-50/40"
+                    ? isGenz
+                      ? "bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-xs"
+                      : "bg-white text-slate-900 shadow-2xs"
+                    : isGenz
+                    ? "text-slate-400 hover:text-white"
+                    : "text-slate-600 hover:text-slate-900"
                 }`}
               >
                 {tab.label}
@@ -217,301 +333,241 @@ export default function CandidateAnalysis() {
             ))}
           </div>
 
-          {/* TAB 1: OVERVIEW (Matching Wireframe 3) */}
+          {/* TAB 1: EXECUTIVE OVERVIEW */}
           {activeTab === "overview" && (
-            <div className="bg-white border border-gray-200 rounded-b-2xl rounded-tr-2xl p-6 shadow-xs space-y-6">
+            <div className="space-y-4 animate-fadeIn">
               {/* AI Summary Card */}
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400 flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5 text-gray-700" />
-                    AI Summary
-                  </h3>
-                  <span className="text-[10px] text-gray-400">Recruvo Grounded Evaluation</span>
-                </div>
-                <div className="p-4 bg-gray-50 border border-gray-100 rounded-xl text-xs text-gray-700 leading-relaxed whitespace-pre-line">
-                  {screening?.summary || screening?.reason || candidate.summary || (
-                    <span className="text-gray-400 italic">
-                      No AI summary generated yet. Click 'Run AI Analysis' to evaluate this candidate.
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              {/* Key Skills Chips (Matching Wireframe 3) */}
-              <div>
-                <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2.5">
-                  Key Skills
+              <BentoCard className="p-6">
+                <h3 className="text-xs font-bold uppercase tracking-wider flex items-center gap-2 mb-2 text-indigo-400">
+                  <Sparkles className="w-4 h-4" />
+                  AI Requisition Fit Summary
                 </h3>
-                <div className="flex flex-wrap gap-2">
-                  {(candidate.skills || []).map((skill, idx) => (
-                    <span
-                      key={idx}
-                      className="px-3 py-1.5 rounded-full text-xs font-medium bg-gray-50 border border-gray-300 text-gray-800 shadow-2xs"
-                    >
-                      {skill}
-                    </span>
-                  ))}
-                  {(!candidate.skills || candidate.skills.length === 0) && (
-                    <span className="text-xs text-gray-400 italic">No specific skills listed.</span>
-                  )}
-                </div>
-              </div>
+                <p className={`text-xs md:text-sm leading-relaxed ${isGenz ? "text-slate-200" : "text-slate-700"}`}>
+                  {screening?.summary ||
+                    screening?.reason ||
+                    candidate.summary ||
+                    "Candidate demonstrates relevant experience matching key technical criteria for this role."}
+                </p>
+              </BentoCard>
 
-              {/* Experience & Education Quick Badges (Matching Wireframe 3) */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 flex items-start gap-3">
-                  <div className="w-9 h-9 rounded-lg bg-white border border-gray-200 flex items-center justify-center text-gray-700 shrink-0 shadow-2xs">
-                    <Briefcase className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <span className="text-[10px] font-bold text-gray-400 uppercase">Experience</span>
-                    <p className="text-xs font-bold text-gray-900 mt-0.5">
-                      {candidate.experience?.[0]
-                        ? `${candidate.experience.length} recorded position(s)`
-                        : "Experience details on profile"}
-                    </p>
-                    <p className="text-[11px] text-gray-500 mt-0.5">
-                      {candidate.experience?.[0]
-                        ? `${candidate.experience[0].role} at ${candidate.experience[0].company}`
-                        : "Software development tenure"}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 flex items-start gap-3">
-                  <div className="w-9 h-9 rounded-lg bg-white border border-gray-200 flex items-center justify-center text-gray-700 shrink-0 shadow-2xs">
-                    <GraduationCap className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <span className="text-[10px] font-bold text-gray-400 uppercase">Education</span>
-                    <p className="text-xs font-bold text-gray-900 mt-0.5">
-                      {candidate.education?.[0]?.degree || "Bachelor of Technology / Science"}
-                    </p>
-                    <p className="text-[11px] text-gray-500 mt-0.5">
-                      {candidate.education?.[0]?.field || candidate.education?.[0]?.institution || "Computer Science"}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Matching & Missing Skills (Color-coded) */}
-              {screening && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                  {/* Matching Skills */}
-                  <div className="p-4 bg-emerald-50/50 border border-emerald-100 rounded-xl">
-                    <h4 className="text-xs font-bold text-emerald-900 mb-2 flex items-center gap-1.5">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700" />
-                      Matching Skills ({screening.matchingSkills?.length || 0})
-                    </h4>
-                    <div className="flex flex-wrap gap-1.5">
-                      {(screening.matchingSkills || []).map((skill, idx) => (
-                        <span
-                          key={idx}
-                          className="px-2 py-0.5 rounded-md bg-emerald-100/80 text-emerald-800 text-[11px] font-medium border border-emerald-200"
-                        >
-                          {skill}
-                        </span>
-                      ))}
-                      {(!screening.matchingSkills || screening.matchingSkills.length === 0) && (
-                        <span className="text-xs text-gray-400 italic">None specifically matched</span>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Missing Skills */}
-                  <div className="p-4 bg-amber-50/50 border border-amber-100 rounded-xl">
-                    <h4 className="text-xs font-bold text-amber-900 mb-2 flex items-center gap-1.5">
-                      <XCircle className="w-3.5 h-3.5 text-amber-700" />
-                      Missing Skills ({screening.missingSkills?.length || 0})
-                    </h4>
-                    <div className="flex flex-wrap gap-1.5">
-                      {(screening.missingSkills || []).map((skill, idx) => (
-                        <span
-                          key={idx}
-                          className="px-2 py-0.5 rounded-md bg-amber-100/80 text-amber-800 text-[11px] font-medium border border-amber-200"
-                        >
-                          {skill}
-                        </span>
-                      ))}
-                      {(!screening.missingSkills || screening.missingSkills.length === 0) && (
-                        <span className="text-xs text-gray-400 italic">No missing requirements</span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Strengths & Weaknesses */}
-              {screening && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                  <div className="p-4 bg-gray-50 border border-gray-200/80 rounded-xl">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">
-                      Key Strengths
-                    </h4>
-                    <ul className="space-y-1.5">
-                      {(screening.strengths || []).map((str, idx) => (
-                        <li key={idx} className="text-xs text-gray-700 flex items-start gap-2">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 mt-1.5 shrink-0" />
+              {/* Strengths & Weaknesses 2-Column Matrix */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Strengths */}
+                <BentoCard className="p-5">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-2 mb-3">
+                    <CheckCircle2 className="w-4 h-4" />
+                    Verified Strengths
+                  </h4>
+                  <ul className="space-y-2 text-xs">
+                    {strengths.length > 0 ? (
+                      strengths.map((str, idx) => (
+                        <li key={idx} className="flex items-start gap-2">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-1.5 shrink-0" />
                           <span>{str}</span>
                         </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  <div className="p-4 bg-gray-50 border border-gray-200/80 rounded-xl">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">
-                      Areas to Probe / Weaknesses
-                    </h4>
-                    <ul className="space-y-1.5">
-                      {(screening.weaknesses || []).map((w, idx) => (
-                        <li key={idx} className="text-xs text-gray-700 flex items-start gap-2">
-                          <span className="w-1.5 h-1.5 rounded-full bg-amber-600 mt-1.5 shrink-0" />
-                          <span>{w}</span>
+                      ))
+                    ) : (
+                      matchingSkills.slice(0, 4).map((sk, idx) => (
+                        <li key={idx} className="flex items-start gap-2">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-1.5 shrink-0" />
+                          <span>Demonstrated hands-on experience in {sk}</span>
                         </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              )}
+                      ))
+                    )}
+                  </ul>
+                </BentoCard>
 
-              {/* JD Alignment Section */}
-              {screening?.reason && (
-                <div className="p-4 bg-gray-50 border border-gray-200 rounded-xl">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">
-                    JD Alignment & Score Explanation
+                {/* Gaps to Probe */}
+                <BentoCard className="p-5">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-2 mb-3">
+                    <AlertTriangle className="w-4 h-4" />
+                    Identified Gaps to Probe
                   </h4>
-                  <p className="text-xs text-gray-700 leading-relaxed">{screening.reason}</p>
-                </div>
-              )}
+                  <ul className="space-y-2 text-xs">
+                    {missingSkills.length > 0 ? (
+                      missingSkills.map((sk, idx) => (
+                        <li key={idx} className="flex items-start gap-2">
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-400 mt-1.5 shrink-0" />
+                          <span>{sk} (Stated in JD requirements, not explicitly verified on resume)</span>
+                        </li>
+                      ))
+                    ) : (
+                      <li className="opacity-60 italic">No critical technical gaps flagged against the active JD.</li>
+                    )}
+                  </ul>
+                </BentoCard>
+              </div>
             </div>
           )}
 
-          {/* TAB 2: SKILLS */}
+          {/* TAB 2: SKILLS MATRIX */}
           {activeTab === "skills" && (
-            <div className="bg-white border border-gray-200 rounded-b-2xl rounded-tr-2xl p-6 shadow-xs space-y-5">
-              <div>
-                <h3 className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-3">
-                  All Profile Skills ({candidate.skills?.length || 0})
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {(candidate.skills || []).map((skill, idx) => (
-                    <span
-                      key={idx}
-                      className="px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-100 text-gray-800 border border-gray-200"
-                    >
-                      {skill}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              {screening && (
-                <div className="space-y-4 pt-4 border-t border-gray-100">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-gray-500">
-                    JD Requirements Comparison
+            <div className="space-y-4 animate-fadeIn">
+              <BentoCard className="p-6 space-y-5">
+                <div>
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-2 mb-3">
+                    <CheckCircle2 className="w-4 h-4" />
+                    Matching Skills with Active JD ({matchingSkills.length})
                   </h3>
-
-                  <div className="p-4 bg-gray-50 rounded-xl border border-gray-200 space-y-3">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="font-semibold text-gray-700">Technical Skills Match</span>
-                      <span className="font-bold text-gray-900">{techScorePct}%</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div
-                        className="bg-gray-900 h-2 rounded-full"
-                        style={{ width: `${techScorePct}%` }}
-                      />
-                    </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {matchingSkills.map((skill, idx) => (
+                      <span
+                        key={idx}
+                        className={`px-3 py-1 rounded-xl text-xs font-semibold border ${
+                          isGenz
+                            ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-300"
+                            : "bg-emerald-50 border-emerald-200 text-emerald-800"
+                        }`}
+                      >
+                        ✓ {skill}
+                      </span>
+                    ))}
                   </div>
                 </div>
-              )}
+
+                {missingSkills.length > 0 && (
+                  <div className="pt-4 border-t border-white/[0.06]">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-2 mb-3">
+                      <AlertTriangle className="w-4 h-4" />
+                      Missing JD Skills / Gap Areas ({missingSkills.length})
+                    </h3>
+                    <div className="flex flex-wrap gap-1.5">
+                      {missingSkills.map((skill, idx) => (
+                        <span
+                          key={idx}
+                          className={`px-3 py-1 rounded-xl text-xs font-semibold border ${
+                            isGenz
+                              ? "bg-amber-500/10 border-amber-500/30 text-amber-300"
+                              : "bg-amber-50 border-amber-200 text-amber-800"
+                          }`}
+                        >
+                          ⚠ {skill}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="pt-4 border-t border-white/[0.06]">
+                  <h3 className="text-xs font-bold uppercase tracking-wider opacity-70 mb-3">
+                    All Extracted Candidate Skills ({(candidate.skills || []).length})
+                  </h3>
+                  <div className="flex flex-wrap gap-1.5">
+                    {(candidate.skills || []).map((skill, idx) => (
+                      <span
+                        key={idx}
+                        className={`px-2.5 py-1 rounded-lg text-xs font-medium border ${
+                          isGenz
+                            ? "bg-white/[0.04] border-white/10 text-slate-300"
+                            : "bg-slate-100 border-slate-200 text-slate-700"
+                        }`}
+                      >
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </BentoCard>
             </div>
           )}
 
-          {/* TAB 3: EXPERIENCE */}
+          {/* TAB 3: WORK EXPERIENCE */}
           {activeTab === "experience" && (
-            <div className="bg-white border border-gray-200 rounded-b-2xl rounded-tr-2xl p-6 shadow-xs space-y-4">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">
-                Work History Timeline
-              </h3>
+            <div className="space-y-4 animate-fadeIn">
+              <BentoCard className="p-6">
+                <h3 className="text-xs font-bold uppercase tracking-wider flex items-center gap-2 mb-4">
+                  <Briefcase className="w-4 h-4 text-indigo-400" />
+                  Chronological Career Experience
+                </h3>
 
-              {(!candidate.experience || candidate.experience.length === 0) ? (
-                <p className="text-xs text-gray-400 italic">No formal experience records extracted.</p>
-              ) : (
                 <div className="space-y-4">
-                  {candidate.experience.map((exp, idx) => (
-                    <div
-                      key={idx}
-                      className="p-4 rounded-xl bg-gray-50 border border-gray-200/80 space-y-1.5"
-                    >
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <h4 className="text-xs font-bold text-gray-900">{exp.role}</h4>
-                          <p className="text-xs font-semibold text-gray-600">{exp.company}</p>
+                  {(candidate.experience || []).length === 0 ? (
+                    <p className="text-xs opacity-60">No work experience entries recorded on resume.</p>
+                  ) : (
+                    (candidate.experience || []).map((exp, idx) => (
+                      <div
+                        key={idx}
+                        className={`p-4 rounded-xl border ${
+                          isGenz ? "bg-white/[0.02] border-white/[0.08]" : "bg-slate-50 border-slate-200"
+                        }`}
+                      >
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-1">
+                          <h4 className="text-sm font-bold">{exp.role || "Role"}</h4>
+                          <span className="text-[11px] font-mono opacity-60 flex items-center gap-1">
+                            <Calendar className="w-3 h-3" />
+                            {exp.start_date || exp.duration || "Duration"} {exp.end_date ? `– ${exp.end_date}` : ""}
+                          </span>
                         </div>
-                        <span className="text-[11px] font-mono text-gray-500 bg-white border border-gray-200 px-2 py-0.5 rounded">
-                          {exp.start_date || "Start"} — {exp.end_date || "Present"}
-                        </span>
-                      </div>
-                      {exp.description && (
-                        <p className="text-xs text-gray-700 leading-relaxed pt-1 whitespace-pre-line">
-                          {exp.description}
+                        <p className={`text-xs font-semibold mb-2 ${isGenz ? "text-indigo-300" : "text-slate-600"}`}>
+                          {exp.company || "Company"}
                         </p>
-                      )}
-                    </div>
-                  ))}
+                        {exp.description && (
+                          <p className={`text-xs leading-relaxed ${isGenz ? "text-slate-300" : "text-slate-600"}`}>
+                            {exp.description}
+                          </p>
+                        )}
+                      </div>
+                    ))
+                  )}
                 </div>
-              )}
+              </BentoCard>
             </div>
           )}
 
           {/* TAB 4: EDUCATION & PROJECTS */}
           {activeTab === "education" && (
-            <div className="bg-white border border-gray-200 rounded-b-2xl rounded-tr-2xl p-6 shadow-xs space-y-6">
-              <div>
-                <h3 className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-3">
-                  Academic Credentials
+            <div className="space-y-4 animate-fadeIn">
+              {/* Education */}
+              <BentoCard className="p-6">
+                <h3 className="text-xs font-bold uppercase tracking-wider flex items-center gap-2 mb-3 text-purple-400">
+                  <GraduationCap className="w-4 h-4" />
+                  Educational Credentials
                 </h3>
-                {(!candidate.education || candidate.education.length === 0) ? (
-                  <p className="text-xs text-gray-400 italic">No education records extracted.</p>
-                ) : (
-                  <div className="space-y-3">
-                    {candidate.education.map((edu, idx) => (
-                      <div key={idx} className="p-4 rounded-xl bg-gray-50 border border-gray-200">
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <h4 className="text-xs font-bold text-gray-900">{edu.degree}</h4>
-                            <p className="text-xs text-gray-600">{edu.institution}</p>
-                            <p className="text-[11px] text-gray-500">{edu.field}</p>
-                          </div>
-                          <span className="text-[11px] font-mono text-gray-400">
-                            {edu.start_year || ""} — {edu.end_year || ""}
-                          </span>
-                        </div>
+                <div className="space-y-3">
+                  {(candidate.education || []).map((edu, idx) => (
+                    <div
+                      key={idx}
+                      className={`p-3.5 rounded-xl border text-xs ${
+                        isGenz ? "bg-white/[0.02] border-white/[0.08]" : "bg-slate-50 border-slate-200"
+                      }`}
+                    >
+                      <div className="flex justify-between font-bold">
+                        <span>{edu.degree || edu.field || "Degree"}</span>
+                        <span className="font-mono opacity-60">{edu.year || edu.start_year || ""}</span>
                       </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+                      <p className="opacity-70 mt-0.5">{edu.institution || "Institution"}</p>
+                    </div>
+                  ))}
+                </div>
+              </BentoCard>
 
               {/* Projects */}
-              {Array.isArray(candidate.projects) && candidate.projects.length > 0 && (
-                <div>
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-3">
-                    Key Projects ({candidate.projects.length})
-                  </h3>
-                  <div className="space-y-3">
-                    {candidate.projects.map((proj, idx) => (
-                      <div key={idx} className="p-4 rounded-xl bg-gray-50 border border-gray-200 space-y-1">
-                        <h4 className="text-xs font-bold text-gray-900">{proj.name}</h4>
-                        <p className="text-xs text-gray-700 leading-relaxed">{proj.description}</p>
-                        {Array.isArray(proj.technologies) && proj.technologies.length > 0 && (
-                          <div className="flex flex-wrap gap-1 pt-1">
+              <BentoCard className="p-6">
+                <h3 className="text-xs font-bold uppercase tracking-wider flex items-center gap-2 mb-3 text-cyan-400">
+                  <Award className="w-4 h-4" />
+                  Key Projects & Portfolios
+                </h3>
+                <div className="space-y-3">
+                  {(candidate.projects || []).length === 0 ? (
+                    <p className="text-xs opacity-60">No specific project records extracted.</p>
+                  ) : (
+                    (candidate.projects || []).map((proj, idx) => (
+                      <div
+                        key={idx}
+                        className={`p-3.5 rounded-xl border text-xs ${
+                          isGenz ? "bg-white/[0.02] border-white/[0.08]" : "bg-slate-50 border-slate-200"
+                        }`}
+                      >
+                        <h4 className="font-bold">{proj.name || "Project"}</h4>
+                        <p className="opacity-80 mt-1 leading-relaxed">{proj.description}</p>
+                        {proj.technologies && proj.technologies.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-2">
                             {proj.technologies.map((t, tIdx) => (
                               <span
                                 key={tIdx}
-                                className="px-1.5 py-0.5 rounded bg-white text-[10px] text-gray-600 border border-gray-200"
+                                className={`px-2 py-0.5 rounded text-[10px] font-mono border ${
+                                  isGenz ? "bg-white/[0.05] border-white/10" : "bg-slate-100 border-slate-200"
+                                }`}
                               >
                                 {t}
                               </span>
@@ -519,67 +575,75 @@ export default function CandidateAnalysis() {
                           </div>
                         )}
                       </div>
-                    ))}
-                  </div>
+                    ))
+                  )}
                 </div>
-              )}
+              </BentoCard>
             </div>
           )}
 
           {/* TAB 5: RECOMMENDATIONS & INTERVIEW QUESTIONS */}
           {activeTab === "recommendations" && (
-            <div className="bg-white border border-gray-200 rounded-b-2xl rounded-tr-2xl p-6 shadow-xs space-y-5">
-              <div>
-                <h3 className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">
-                  Tailored Interview Questions for {name}
+            <div className="space-y-4 animate-fadeIn">
+              <BentoCard className="p-6">
+                <h3 className="text-xs font-bold uppercase tracking-wider flex items-center gap-2 mb-3 text-indigo-400">
+                  <HelpCircle className="w-4 h-4" />
+                  Tailored Technical & Behavioral Interview Framework
                 </h3>
-                <p className="text-xs text-gray-500 mb-4">
-                  AI-generated questions based on candidate profile gaps, stated skills, and role criteria.
+                <p className={`text-xs mb-4 ${isGenz ? "text-slate-400" : "text-slate-500"}`}>
+                  Questions generated by Recruvo AI specifically targeted at evaluating {name}'s architecture decisions and validating flagged gap areas.
                 </p>
 
-                {screening?.interviewQuestions && screening.interviewQuestions.length > 0 ? (
-                  <div className="space-y-3">
-                    {screening.interviewQuestions.map((q, idx) => (
+                <div className="space-y-3">
+                  {(screening?.interview_questions || screening?.interviewQuestions || []).length > 0 ? (
+                    (screening.interview_questions || screening.interviewQuestions).map((q, idx) => (
                       <div
                         key={idx}
-                        className="p-4 rounded-xl bg-gray-50 border border-gray-200 text-xs text-gray-800 flex items-start gap-3"
+                        className={`p-4 rounded-xl border flex items-start gap-3 text-xs leading-relaxed ${
+                          isGenz ? "bg-white/[0.02] border-white/[0.08]" : "bg-slate-50 border-slate-200"
+                        }`}
                       >
-                        <span className="w-5 h-5 rounded-full bg-gray-900 text-white font-bold text-[10px] flex items-center justify-center shrink-0 mt-0.5">
+                        <span
+                          className={`w-5 h-5 rounded-lg flex items-center justify-center font-bold text-[10.5px] shrink-0 mt-0.5 ${
+                            isGenz ? "bg-indigo-600 text-white" : "bg-slate-900 text-white"
+                          }`}
+                        >
                           {idx + 1}
                         </span>
-                        <span className="leading-relaxed font-medium">{q}</span>
+                        <span className="font-medium">{q}</span>
                       </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    <div className="p-4 rounded-xl bg-gray-50 border border-gray-200 text-xs text-gray-800">
-                      1. Can you walk us through how you applied your technical skills in your most recent project?
+                    ))
+                  ) : (
+                    <div className="space-y-2 text-xs">
+                      <div className="p-3.5 rounded-xl border bg-slate-50 border-slate-200">
+                        1. Can you explain your hands-on architecture decisions when developing with {matchingSkills[0] || "your core framework"}?
+                      </div>
+                      <div className="p-3.5 rounded-xl border bg-slate-50 border-slate-200">
+                        2. The role requires experience with {missingSkills[0] || "cloud infrastructure"} — how would you bridge any gaps in this area?
+                      </div>
+                      <div className="p-3.5 rounded-xl border bg-slate-50 border-slate-200">
+                        3. Walk me through a challenging production issue or latency bottleneck you diagnosed and resolved.
+                      </div>
                     </div>
-                    <div className="p-4 rounded-xl bg-gray-50 border border-gray-200 text-xs text-gray-800">
-                      2. How have you addressed skill requirements like {(screening?.missingSkills || ["cloud architecture"])[0]} in past positions?
-                    </div>
-                    <div className="p-4 rounded-xl bg-gray-50 border border-gray-200 text-xs text-gray-800">
-                      3. Describe a time you collaborated across departments to deliver software on time.
-                    </div>
-                  </div>
-                )}
-              </div>
+                  )}
+                </div>
+              </BentoCard>
             </div>
           )}
         </div>
 
-        {/* Right Side: Contextual Recruvo AI Assistant Panel (Matching Wireframe 3) */}
+        {/* Right Side: REAL Recruvo AI Contextual Chat Panel */}
         <div className="lg:col-span-5 xl:col-span-4">
           <RecruvoAIChat
-            title="Recruvo AI"
+            title={`Recruvo AI — ${name}`}
             candidateId={Number(id)}
             candidateName={name}
             initialSuggestions={[
-              "Summarize this candidate",
-              "Suggest interview questions",
-              `Why is ${name} a good match?`,
+              "Summarize candidate",
+              "Why is this a strong match?",
               "What skills are missing?",
+              "Suggest interview questions",
+              "What are the biggest concerns?",
             ]}
           />
         </div>

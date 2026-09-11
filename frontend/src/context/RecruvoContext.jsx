@@ -23,6 +23,48 @@ export function RecruvoProvider({ children }) {
     }
   });
 
+  const [theme, setThemeState] = useState(() => {
+    try {
+      return localStorage.getItem("recruvo_theme") || "classic";
+    } catch {
+      return "classic";
+    }
+  });
+
+  const setTheme = useCallback((newTheme) => {
+    const validTheme = newTheme === "genz" ? "genz" : "classic";
+    setThemeState(validTheme);
+    try {
+      localStorage.setItem("recruvo_theme", validTheme);
+    } catch (e) {
+      console.warn("Theme storage error:", e);
+    }
+    document.documentElement.setAttribute("data-theme", validTheme);
+    if (validTheme === "genz") {
+      document.documentElement.classList.add("theme-genz");
+      document.documentElement.classList.remove("theme-classic");
+    } else {
+      document.documentElement.classList.add("theme-classic");
+      document.documentElement.classList.remove("theme-genz");
+    }
+  }, []);
+
+  const toggleTheme = useCallback(() => {
+    setTheme(theme === "classic" ? "genz" : "classic");
+  }, [theme, setTheme]);
+
+  useEffect(() => {
+    // Initial sync
+    document.documentElement.setAttribute("data-theme", theme);
+    if (theme === "genz") {
+      document.documentElement.classList.add("theme-genz");
+      document.documentElement.classList.remove("theme-classic");
+    } else {
+      document.documentElement.classList.add("theme-classic");
+      document.documentElement.classList.remove("theme-genz");
+    }
+  }, [theme]);
+
   const addActivity = useCallback((text, type = "info") => {
     const activity = {
       id: Date.now(),
@@ -335,6 +377,9 @@ export function RecruvoProvider({ children }) {
   const clearSessionData = clearCache;
 
   const value = {
+    theme,
+    setTheme,
+    toggleTheme,
     jobs,
     activeJob,
     setActiveJob,

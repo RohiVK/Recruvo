@@ -10,14 +10,21 @@ import {
   Key,
   AlertCircle,
   ExternalLink,
+  Palette,
+  Compass,
+  Zap,
+  Sparkles,
 } from "lucide-react";
 import { useRecruvo } from "../context/RecruvoContext";
+import BentoCard from "../components/ui/BentoCard";
+import ThemeToggle from "../components/layout/ThemeToggle";
 import { fetchApi } from "../api/client";
 
 export default function Settings() {
-  const { backendStatus, refreshData, clearSessionData, candidates, jobs, screenings } = useRecruvo();
+  const { backendStatus, refreshData, clearCache, candidates, jobs, screenings, theme, setTheme } = useRecruvo();
+  const isGenz = theme === "genz";
 
-  const [activeTab, setActiveTab] = useState("general");
+  const [activeTab, setActiveTab] = useState("appearance"); // appearance | general | analysis | privacy | about
   const [minMatchThreshold, setMinMatchThreshold] = useState(70);
   const [enableStrictEvaluation, setEnableStrictEvaluation] = useState(true);
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
@@ -77,58 +84,79 @@ export default function Settings() {
   };
 
   const tabs = [
-    { key: "general", label: "General", icon: SettingsIcon },
+    { key: "appearance", label: "Appearance & Theme", icon: Palette },
+    { key: "general", label: "General & API", icon: SettingsIcon },
     { key: "analysis", label: "Analysis Preferences", icon: Sliders },
     { key: "privacy", label: "Data & Privacy", icon: Shield },
-    { key: "about", label: "About", icon: Info },
+    { key: "about", label: "About Recruvo", icon: Info },
   ];
 
   return (
-    <div className="space-y-6 animate-fadeIn max-w-4xl mx-auto">
+    <div className="space-y-8 animate-fadeIn max-w-4xl mx-auto">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-gray-900">Settings</h1>
-        <p className="text-sm text-gray-500 mt-0.5">
-          Manage system configurations, Google Gemini API Key, and session privacy.
+        <h1 className="text-2xl font-bold tracking-tight">System Settings</h1>
+        <p className={`text-xs md:text-sm mt-0.5 ${isGenz ? "text-slate-400" : "text-slate-500"}`}>
+          Customize visual themes, Google Gemini API configurations, evaluation thresholds, and session privacy.
         </p>
       </div>
 
       {toastMessage && (
-        <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center gap-2 animate-fadeIn">
-          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+        <div
+          className={`p-3.5 rounded-xl border text-xs font-semibold flex items-center gap-2.5 animate-fadeIn ${
+            isGenz
+              ? "bg-emerald-950/40 border-emerald-500/40 text-emerald-300"
+              : "bg-emerald-50 border-emerald-200 text-emerald-800"
+          }`}
+        >
+          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
           <span>{toastMessage}</span>
         </div>
       )}
 
       {errorMessage && (
-        <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center justify-between animate-fadeIn">
+        <div
+          className={`p-3.5 rounded-xl border text-xs flex items-center justify-between animate-fadeIn ${
+            isGenz
+              ? "bg-rose-950/40 border-rose-500/40 text-rose-300"
+              : "bg-rose-50 border-rose-200 text-rose-700"
+          }`}
+        >
           <div className="flex items-center gap-2">
             <AlertCircle className="w-4 h-4 shrink-0" />
             <span>{errorMessage}</span>
           </div>
           <button
             onClick={() => setErrorMessage(null)}
-            className="text-xs text-red-700 underline font-semibold"
+            className="text-xs underline font-semibold"
           >
             Dismiss
           </button>
         </div>
       )}
 
-      {/* Settings Container */}
-      <div className="bg-white border border-gray-200 rounded-2xl shadow-xs overflow-hidden">
-        {/* Navigation Tabs */}
-        <div className="flex border-b border-gray-200 bg-gray-50/70 p-1.5 gap-1 overflow-x-auto no-scrollbar">
+      {/* Settings Card Container */}
+      <BentoCard className="overflow-hidden">
+        {/* Navigation Tabs Bar */}
+        <div
+          className={`flex border-b p-1.5 gap-1 overflow-x-auto no-scrollbar ${
+            isGenz ? "bg-white/[0.02] border-white/[0.08]" : "bg-slate-50 border-slate-200"
+          }`}
+        >
           {tabs.map((tab) => {
             const Icon = tab.icon;
             return (
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
-                className={`flex-1 py-2 px-3 text-xs font-semibold rounded-lg flex items-center justify-center gap-2 transition-all whitespace-nowrap ${
+                className={`flex-1 py-2 px-3 text-xs font-bold rounded-xl flex items-center justify-center gap-2 transition-all whitespace-nowrap ${
                   activeTab === tab.key
-                    ? "bg-white text-gray-900 shadow-xs border border-gray-200/80"
-                    : "text-gray-500 hover:text-gray-900"
+                    ? isGenz
+                      ? "bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-xs"
+                      : "bg-white text-slate-900 shadow-2xs border border-slate-200"
+                    : isGenz
+                    ? "text-slate-400 hover:text-slate-200"
+                    : "text-slate-500 hover:text-slate-900"
                 }`}
               >
                 <Icon className="w-3.5 h-3.5" />
@@ -138,37 +166,131 @@ export default function Settings() {
           })}
         </div>
 
-        <div className="p-6">
-          {/* TAB 1: GENERAL & GEMINI API KEY */}
+        <div className="p-6 md:p-8">
+          {/* TAB 1: APPEARANCE & THEME (PROMINENT SECTION) */}
+          {activeTab === "appearance" && (
+            <div className="space-y-6 animate-fadeIn">
+              <div>
+                <h3 className="text-sm font-bold mb-1">Visual Theme Persona</h3>
+                <p className={`text-xs ${isGenz ? "text-slate-400" : "text-slate-500"}`}>
+                  Switch the entire frontend personality instantly. Your selection is persisted in local storage.
+                </p>
+              </div>
+
+              {/* Visual Preview Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Classic Preview Card */}
+                <div
+                  onClick={() => setTheme("classic")}
+                  className={`p-5 rounded-2xl border-2 transition-all cursor-pointer relative overflow-hidden ${
+                    !isGenz
+                      ? "border-slate-900 bg-white shadow-sm ring-2 ring-slate-900/10"
+                      : "border-white/10 bg-[#161828] opacity-70 hover:opacity-100"
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <Compass className="w-4 h-4 text-slate-700" />
+                      <span className="font-bold text-xs text-slate-900">CLASSIC THEME</span>
+                    </div>
+                    {!isGenz && (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-900 text-white">
+                        Active
+                      </span>
+                    )}
+                  </div>
+
+                  <p className="text-xs text-slate-600 leading-relaxed mb-4">
+                    Clean, minimal, recruiter-friendly design with white surfaces, neutral borders, restrained shadows, and Linear-style productivity clarity.
+                  </p>
+
+                  <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5">
+                    <div className="w-20 h-2 bg-slate-300 rounded" />
+                    <div className="w-full h-1.5 bg-slate-200 rounded" />
+                    <div className="w-2/3 h-1.5 bg-slate-200 rounded" />
+                  </div>
+                </div>
+
+                {/* Gen-Z Preview Card */}
+                <div
+                  onClick={() => setTheme("genz")}
+                  className={`p-5 rounded-2xl border-2 transition-all cursor-pointer relative overflow-hidden ${
+                    isGenz
+                      ? "border-indigo-500 bg-[#141728] shadow-[0_0_25px_-5px_rgba(99,102,241,0.4)] ring-2 ring-indigo-500/20"
+                      : "border-slate-200 bg-slate-50 opacity-70 hover:opacity-100"
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <Zap className="w-4 h-4 text-amber-300 fill-amber-300" />
+                      <span className="font-bold text-xs text-indigo-300">GEN-Z (AI-NATIVE)</span>
+                    </div>
+                    {isGenz && (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gradient-to-r from-indigo-500 to-violet-600 text-white shadow-xs">
+                        Active
+                      </span>
+                    )}
+                  </div>
+
+                  <p className={`text-xs leading-relaxed mb-4 ${isGenz ? "text-slate-300" : "text-slate-600"}`}>
+                    Modern AI-native developer aesthetic inspired by Git2Know with dark obsidian surfaces, bento cards, glowing accents, neon score meters, and expressive typography.
+                  </p>
+
+                  <div className="p-3 bg-[#0E1018] border border-indigo-500/30 rounded-xl space-y-1.5 shadow-[inset_0_0_15px_rgba(99,102,241,0.1)]">
+                    <div className="w-20 h-2 bg-indigo-500 rounded" />
+                    <div className="w-full h-1.5 bg-white/10 rounded" />
+                    <div className="w-2/3 h-1.5 bg-indigo-400/40 rounded" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Global Theme Toggle Widget */}
+              <div className="pt-4 border-t border-white/[0.08] flex items-center justify-between">
+                <div>
+                  <h4 className="text-xs font-bold">Quick Toggle Switch</h4>
+                  <p className={`text-[11px] ${isGenz ? "text-slate-400" : "text-slate-500"}`}>
+                    Also accessible in the top-right header anytime.
+                  </p>
+                </div>
+                <ThemeToggle />
+              </div>
+            </div>
+          )}
+
+          {/* TAB 2: GENERAL & GEMINI API KEY */}
           {activeTab === "general" && (
-            <div className="space-y-6">
+            <div className="space-y-6 animate-fadeIn">
               {/* Gemini API Key Box */}
-              <div className="p-5 bg-gray-50 border border-gray-200 rounded-xl space-y-3">
+              <div
+                className={`p-5 rounded-xl border space-y-3 ${
+                  isGenz ? "bg-white/[0.02] border-white/10" : "bg-slate-50 border-slate-200"
+                }`}
+              >
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-2">
-                    <Key className="w-4 h-4 text-gray-800" />
-                    <h3 className="text-sm font-bold text-gray-900">Google Gemini API Key</h3>
+                    <Key className="w-4 h-4 text-indigo-400" />
+                    <h3 className="text-sm font-bold">Google Gemini API Key</h3>
                   </div>
                   <span
                     className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-0.5 rounded-md border ${
                       isKeyConfigured
-                        ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                        : "bg-amber-50 text-amber-700 border-amber-200"
+                        ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/30"
+                        : "bg-amber-500/20 text-amber-300 border-amber-500/30"
                     }`}
                   >
                     <span
                       className={`w-1.5 h-1.5 rounded-full ${
-                        isKeyConfigured ? "bg-emerald-500" : "bg-amber-500"
+                        isKeyConfigured ? "bg-emerald-400" : "bg-amber-400"
                       }`}
                     />
                     {isKeyConfigured ? "Active" : "Not Set"}
                   </span>
                 </div>
 
-                <p className="text-xs text-gray-500 leading-relaxed">
+                <p className={`text-xs leading-relaxed ${isGenz ? "text-slate-400" : "text-slate-500"}`}>
                   Enter your Google Gemini API key to enable live AI candidate parsing, deep contextual chat, and resume screening.
                   {maskedKey && (
-                    <span className="block mt-1 font-mono text-gray-700 font-medium">
+                    <span className="block mt-1 font-mono font-bold text-indigo-400">
                       Current Key: {maskedKey}
                     </span>
                   )}
@@ -180,12 +302,18 @@ export default function Settings() {
                     value={apiKeyInput}
                     onChange={(e) => setApiKeyInput(e.target.value)}
                     placeholder="Enter GEMINI_API_KEY (e.g. AIzaSy...)"
-                    className="flex-1 text-xs text-gray-900 bg-white border border-gray-300 rounded-xl px-3.5 py-2.5 focus:outline-none focus:ring-1 focus:ring-gray-900"
+                    className={`flex-1 text-xs rounded-xl px-3.5 py-2.5 focus:outline-none border ${
+                      isGenz
+                        ? "bg-[#141724] border-white/10 text-slate-100 placeholder-slate-500 focus:border-indigo-500"
+                        : "bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:border-slate-900"
+                    }`}
                   />
                   <button
                     type="submit"
                     disabled={!apiKeyInput.trim() || isSavingKey}
-                    className="px-4 py-2.5 rounded-xl bg-gray-900 text-white hover:bg-black text-xs font-bold transition-colors disabled:opacity-40 shrink-0"
+                    className={`px-4 py-2.5 rounded-xl text-xs font-bold text-white transition-all disabled:opacity-40 shrink-0 ${
+                      isGenz ? "bg-indigo-600 hover:bg-indigo-500 shadow-xs" : "bg-slate-900 hover:bg-black"
+                    }`}
                   >
                     {isSavingKey ? "Verifying..." : "Save & Verify Key"}
                   </button>
@@ -195,7 +323,7 @@ export default function Settings() {
                   href="https://aistudio.google.com/app/apikey"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-[11px] text-gray-600 hover:text-gray-900 font-semibold underline pt-1"
+                  className="inline-flex items-center gap-1 text-[11px] text-indigo-400 hover:underline font-semibold pt-1"
                 >
                   <span>Get a Gemini API Key from Google AI Studio</span>
                   <ExternalLink className="w-3 h-3" />
@@ -203,10 +331,10 @@ export default function Settings() {
               </div>
 
               {/* Server Status */}
-              <div className="flex items-center justify-between pb-4 border-b border-gray-100">
+              <div className="flex items-center justify-between pb-4 border-b border-white/[0.08]">
                 <div>
-                  <h3 className="text-sm font-bold text-gray-900">Backend Server Connectivity</h3>
-                  <p className="text-xs text-gray-500 mt-0.5">
+                  <h3 className="text-sm font-bold">Backend Server Connectivity</h3>
+                  <p className={`text-xs mt-0.5 ${isGenz ? "text-slate-400" : "text-slate-500"}`}>
                     Live connection status to Node.js & PGlite / PostgreSQL database.
                   </p>
                 </div>
@@ -214,20 +342,20 @@ export default function Settings() {
                   <span
                     className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${
                       backendStatus === "online"
-                        ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                        : "bg-red-50 text-red-700 border-red-200"
+                        ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
+                        : "bg-rose-500/20 text-rose-300 border-rose-500/40"
                     }`}
                   >
                     <span
                       className={`w-2 h-2 rounded-full ${
-                        backendStatus === "online" ? "bg-emerald-500" : "bg-red-500"
+                        backendStatus === "online" ? "bg-emerald-400" : "bg-rose-400"
                       }`}
                     />
                     {backendStatus === "online" ? "Connected (Port 3000)" : "Offline / Degraded"}
                   </span>
                   <button
                     onClick={refreshData}
-                    className="p-1.5 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
+                    className="p-1.5 rounded-lg border border-white/10 opacity-70 hover:opacity-100"
                     title="Refresh connection"
                   >
                     <RefreshCw className="w-3.5 h-3.5" />
@@ -236,38 +364,46 @@ export default function Settings() {
               </div>
 
               {/* Stored Records Summary */}
-              <div className="flex items-center justify-between pb-4 border-b border-gray-100">
+              <div className="flex items-center justify-between pb-4 border-b border-white/[0.08]">
                 <div>
-                  <h3 className="text-sm font-bold text-gray-900">Current Workspace Records</h3>
-                  <p className="text-xs text-gray-500 mt-0.5">
+                  <h3 className="text-sm font-bold">Current Workspace Records</h3>
+                  <p className={`text-xs mt-0.5 ${isGenz ? "text-slate-400" : "text-slate-500"}`}>
                     Total stored candidate resumes, job descriptions, and AI evaluations.
                   </p>
                 </div>
-                <div className="text-xs font-semibold text-gray-700 space-x-2">
-                  <span className="bg-gray-100 px-2.5 py-1 rounded-md">{jobs.length} JDs</span>
-                  <span className="bg-gray-100 px-2.5 py-1 rounded-md">
+                <div className="text-xs font-semibold space-x-2">
+                  <span className={`px-2.5 py-1 rounded-md border ${isGenz ? "bg-white/[0.04] border-white/10" : "bg-slate-100 border-slate-200"}`}>
+                    {jobs.length} JDs
+                  </span>
+                  <span className={`px-2.5 py-1 rounded-md border ${isGenz ? "bg-white/[0.04] border-white/10" : "bg-slate-100 border-slate-200"}`}>
                     {candidates.length} Resumes
                   </span>
-                  <span className="bg-gray-100 px-2.5 py-1 rounded-md">
+                  <span className={`px-2.5 py-1 rounded-md border ${isGenz ? "bg-white/[0.04] border-white/10" : "bg-slate-100 border-slate-200"}`}>
                     {screenings.length} Screenings
                   </span>
                 </div>
               </div>
 
               <div>
-                <h3 className="text-sm font-bold text-gray-900 mb-1">Recruiter Display Profile</h3>
-                <p className="text-xs text-gray-500 mb-3">Default reviewer name stamped on PDF exports.</p>
+                <h3 className="text-sm font-bold mb-1">Recruiter Display Profile</h3>
+                <p className={`text-xs mb-3 ${isGenz ? "text-slate-400" : "text-slate-500"}`}>
+                  Default reviewer name stamped on PDF exports.
+                </p>
                 <input
                   type="text"
                   defaultValue="Rohith — Lead Technical Recruiter"
-                  className="w-full max-w-md text-xs text-gray-900 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-gray-900"
+                  className={`w-full max-w-md text-xs rounded-xl px-3 py-2.5 border ${
+                    isGenz ? "bg-[#141724] border-white/10 text-slate-100" : "bg-slate-50 border-slate-200 text-slate-900"
+                  }`}
                 />
               </div>
 
               <div className="pt-2">
                 <button
                   onClick={handleSavePreferences}
-                  className="px-5 py-2.5 rounded-xl bg-gray-900 text-white hover:bg-black text-xs font-bold shadow-xs transition-colors"
+                  className={`px-5 py-2.5 rounded-xl text-xs font-bold text-white transition-all ${
+                    isGenz ? "bg-indigo-600 hover:bg-indigo-500 shadow-xs" : "bg-slate-900 hover:bg-black"
+                  }`}
                 >
                   Save Changes
                 </button>
@@ -275,15 +411,15 @@ export default function Settings() {
             </div>
           )}
 
-          {/* TAB 2: ANALYSIS PREFERENCES */}
+          {/* TAB 3: ANALYSIS PREFERENCES */}
           {activeTab === "analysis" && (
-            <div className="space-y-6">
+            <div className="space-y-6 animate-fadeIn">
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label className="text-sm font-bold text-gray-900">
+                  <label className="text-sm font-bold">
                     High Match Threshold ({minMatchThreshold}%)
                   </label>
-                  <span className="text-xs font-mono font-bold text-gray-700">
+                  <span className="text-xs font-mono font-bold text-indigo-400">
                     {minMatchThreshold}%
                   </span>
                 </div>
@@ -294,17 +430,17 @@ export default function Settings() {
                   step="5"
                   value={minMatchThreshold}
                   onChange={(e) => setMinMatchThreshold(Number(e.target.value))}
-                  className="w-full accent-gray-900"
+                  className="w-full accent-indigo-600"
                 />
-                <p className="text-xs text-gray-500 mt-1">
+                <p className={`text-xs mt-1 ${isGenz ? "text-slate-400" : "text-slate-500"}`}>
                   Candidates above this match threshold will be marked with High Match indicators.
                 </p>
               </div>
 
-              <div className="pt-4 border-t border-gray-100 flex items-center justify-between">
+              <div className="pt-4 border-t border-white/[0.08] flex items-center justify-between">
                 <div>
-                  <h3 className="text-sm font-bold text-gray-900">Strict Non-Hallucination Guardrails</h3>
-                  <p className="text-xs text-gray-500 mt-0.5 max-w-lg">
+                  <h3 className="text-sm font-bold">Strict Non-Hallucination Guardrails</h3>
+                  <p className={`text-xs mt-0.5 max-w-lg ${isGenz ? "text-slate-400" : "text-slate-500"}`}>
                     Constrain Recruvo AI responses exclusively to verified statements found inside uploaded resumes and JD text.
                   </p>
                 </div>
@@ -312,14 +448,16 @@ export default function Settings() {
                   type="checkbox"
                   checked={enableStrictEvaluation}
                   onChange={(e) => setEnableStrictEvaluation(e.target.checked)}
-                  className="w-4 h-4 accent-gray-900 rounded cursor-pointer"
+                  className="w-4 h-4 accent-indigo-600 rounded cursor-pointer"
                 />
               </div>
 
               <div className="pt-2">
                 <button
                   onClick={handleSavePreferences}
-                  className="px-5 py-2.5 rounded-xl bg-gray-900 text-white hover:bg-black text-xs font-bold shadow-xs transition-colors"
+                  className={`px-5 py-2.5 rounded-xl text-xs font-bold text-white transition-all ${
+                    isGenz ? "bg-indigo-600 hover:bg-indigo-500 shadow-xs" : "bg-slate-900 hover:bg-black"
+                  }`}
                 >
                   Save Preferences
                 </button>
@@ -327,30 +465,33 @@ export default function Settings() {
             </div>
           )}
 
-          {/* TAB 3: DATA & PRIVACY */}
+          {/* TAB 4: DATA & PRIVACY */}
           {activeTab === "privacy" && (
-            <div className="space-y-6">
-              <div className="p-4 bg-gray-50 border border-gray-200 rounded-xl space-y-2">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-gray-700 flex items-center gap-1.5">
-                  <Shield className="w-3.5 h-3.5 text-gray-900" />
+            <div className="space-y-6 animate-fadeIn">
+              <div
+                className={`p-4 rounded-xl border space-y-2 ${
+                  isGenz ? "bg-white/[0.02] border-white/10" : "bg-slate-50 border-slate-200"
+                }`}
+              >
+                <h3 className="text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 text-indigo-400">
+                  <Shield className="w-3.5 h-3.5" />
                   Data Processing & Privacy Standard
                 </h3>
-                <p className="text-xs text-gray-600 leading-relaxed">
-                  Recruvo processes candidate documents securely through Google Gemini API calls.
-                  Sensitive candidate personally identifiable information (PII) is kept private and stored in your local recruitment workspace.
+                <p className={`text-xs leading-relaxed ${isGenz ? "text-slate-300" : "text-slate-600"}`}>
+                  Recruvo processes candidate documents securely. Sensitive candidate personally identifiable information (PII) is kept private and persisted strictly in your local recruitment database.
                 </p>
               </div>
 
-              <div className="pt-4 border-t border-gray-100 flex items-center justify-between">
+              <div className="pt-4 border-t border-white/[0.08] flex items-center justify-between">
                 <div>
-                  <h3 className="text-sm font-bold text-red-600">Clear Recruitment Workspace Cache</h3>
-                  <p className="text-xs text-gray-500 mt-0.5 max-w-lg">
+                  <h3 className="text-sm font-bold text-rose-500">Clear Recruitment Workspace Cache</h3>
+                  <p className={`text-xs mt-0.5 max-w-lg ${isGenz ? "text-slate-400" : "text-slate-500"}`}>
                     Reset active job selections, cached chat conversations, and local session activity history.
                   </p>
                 </div>
                 <button
                   onClick={() => setIsResetConfirmOpen(true)}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-red-200 text-red-700 hover:bg-red-50 text-xs font-semibold transition-colors"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-rose-500/30 text-rose-400 hover:bg-rose-500/10 text-xs font-semibold transition-colors"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                   <span>Reset Cache</span>
@@ -358,20 +499,20 @@ export default function Settings() {
               </div>
 
               {isResetConfirmOpen && (
-                <div className="p-4 bg-red-50 border border-red-200 rounded-xl space-y-3">
-                  <p className="text-xs font-bold text-red-900">
+                <div className="p-4 bg-rose-950/40 border border-rose-500/40 rounded-xl space-y-3 animate-fadeIn">
+                  <p className="text-xs font-bold text-rose-300">
                     Are you sure you want to reset your local session data?
                   </p>
                   <div className="flex gap-2">
                     <button
                       onClick={handleClearSession}
-                      className="px-3.5 py-1.5 bg-red-600 text-white text-xs font-bold rounded-lg hover:bg-red-700 transition-colors"
+                      className="px-3.5 py-1.5 bg-rose-600 text-white text-xs font-bold rounded-lg hover:bg-rose-700 transition-colors shadow-xs"
                     >
                       Confirm Reset
                     </button>
                     <button
                       onClick={() => setIsResetConfirmOpen(false)}
-                      className="px-3.5 py-1.5 bg-white border border-gray-300 text-gray-700 text-xs font-semibold rounded-lg hover:bg-gray-50"
+                      className="px-3.5 py-1.5 border border-white/10 text-xs font-semibold rounded-lg hover:opacity-80"
                     >
                       Cancel
                     </button>
@@ -381,38 +522,46 @@ export default function Settings() {
             </div>
           )}
 
-          {/* TAB 4: ABOUT */}
+          {/* TAB 5: ABOUT */}
           {activeTab === "about" && (
-            <div className="space-y-4">
+            <div className="space-y-4 animate-fadeIn">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gray-900 text-white font-bold text-lg flex items-center justify-center">
+                <div
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-lg text-white ${
+                    isGenz
+                      ? "bg-gradient-to-br from-indigo-500 to-violet-600 shadow-[0_0_15px_rgba(99,102,241,0.5)]"
+                      : "bg-slate-900"
+                  }`}
+                >
                   R
                 </div>
                 <div>
-                  <h2 className="text-base font-bold text-gray-900">Recruvo v1.0.0</h2>
-                  <p className="text-xs text-gray-500">"Smarter Hiring. Brighter Teams."</p>
+                  <h2 className="text-base font-bold">Recruvo v1.0.0</h2>
+                  <p className={`text-xs ${isGenz ? "text-indigo-300" : "text-slate-500"}`}>
+                    "Smarter Hiring. Brighter Teams."
+                  </p>
                 </div>
               </div>
 
-              <div className="text-xs text-gray-600 leading-relaxed space-y-2 pt-2">
+              <div className={`text-xs leading-relaxed space-y-2 pt-2 ${isGenz ? "text-slate-300" : "text-slate-600"}`}>
                 <p>
-                  Recruvo is an AI-powered resume and profile analysis system built for recruiters.
+                  Recruvo is an AI-native candidate screening and decision support platform.
                   It extracts structured candidate profiles, compares them rigorously against job descriptions,
-                  and offers contextual AI decision support.
+                  and provides grounded AI intelligence for recruiters.
                 </p>
-                <p className="font-semibold text-gray-800">
+                <p className="font-semibold text-indigo-400">
                   Workflow: Upload JD → Upload Resumes → Analyze → View Results → Open Candidate → Compare → Export
                 </p>
               </div>
 
-              <div className="pt-4 border-t border-gray-100 flex items-center justify-between text-[11px] text-gray-400">
+              <div className="pt-4 border-t border-white/[0.08] flex items-center justify-between text-[11px] opacity-50">
                 <span>© {new Date().getFullYear()} Recruvo Intelligence Platform.</span>
                 <span>Powered by Node.js, PGlite, and Google Gemini</span>
               </div>
             </div>
           )}
         </div>
-      </div>
+      </BentoCard>
     </div>
   );
 }

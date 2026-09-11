@@ -1,9 +1,11 @@
 import React, { useState } from "react";
-import { Star, Bug, Send, CheckCircle2, AlertCircle, Sparkles } from "lucide-react";
+import { Star, Bug, Send, CheckCircle2, AlertCircle, Sparkles, Heart } from "lucide-react";
 import { useRecruvo } from "../context/RecruvoContext";
+import BentoCard from "../components/ui/BentoCard";
 
 export default function Feedback() {
-  const { submitFeedback } = useRecruvo();
+  const { submitFeedback, theme } = useRecruvo();
+  const isGenz = theme === "genz";
 
   const [rating, setRating] = useState(0);
   const [hoveredRating, setHoveredRating] = useState(0);
@@ -38,46 +40,62 @@ export default function Feedback() {
   };
 
   return (
-    <div className="space-y-6 animate-fadeIn max-w-4xl mx-auto">
+    <div className="space-y-8 animate-fadeIn max-w-3xl mx-auto">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-gray-900">Feedback</h1>
-        <p className="text-sm text-gray-500 mt-0.5">
-          Help us make Recruvo better. Your feedback means a lot!
+      <div className="text-center">
+        <h1 className="text-2xl font-bold tracking-tight">Platform Feedback & Suggestions</h1>
+        <p className={`text-xs md:text-sm mt-0.5 ${isGenz ? "text-slate-400" : "text-slate-500"}`}>
+          Help us refine Recruvo's candidate screening intelligence.
         </p>
       </div>
 
-      {/* Main Feedback Card (Matching Wireframe 1) */}
-      <div className="bg-white border border-gray-200 rounded-2xl p-8 md:p-12 shadow-xs text-center">
+      {/* Main Feedback Card */}
+      <BentoCard className="p-8 md:p-12 text-center">
         {submittedState ? (
           <div className="py-8 max-w-md mx-auto space-y-4 animate-fadeIn">
-            <div className="w-14 h-14 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-600 flex items-center justify-center mx-auto">
+            <div
+              className={`w-14 h-14 rounded-2xl flex items-center justify-center mx-auto border ${
+                isGenz
+                  ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/40 shadow-[0_0_20px_rgba(16,185,129,0.4)]"
+                  : "bg-emerald-50 text-emerald-600 border-emerald-200"
+              }`}
+            >
               <CheckCircle2 className="w-7 h-7" />
             </div>
-            <h2 className="text-lg font-bold text-gray-900">
+            <h2 className="text-lg font-bold">
               {submittedState === "bug" ? "Bug Report Received!" : "Thank You For Your Feedback!"}
             </h2>
-            <p className="text-xs text-gray-500 leading-relaxed">
-              We appreciate your time in helping us refine Recruvo's recruitment intelligence platform.
+            <p className={`text-xs leading-relaxed ${isGenz ? "text-slate-400" : "text-slate-500"}`}>
+              We appreciate your partnership in refining Recruvo's recruitment decision intelligence.
             </p>
             <button
               onClick={() => setSubmittedState(null)}
-              className="px-5 py-2 rounded-xl bg-gray-900 text-white text-xs font-semibold hover:bg-black transition-colors"
+              className={`px-5 py-2 rounded-xl text-xs font-bold text-white transition-all ${
+                isGenz ? "bg-indigo-600 hover:bg-indigo-500 shadow-xs" : "bg-slate-900 hover:bg-black"
+              }`}
             >
-              Send Another Response
+              Submit Another Note
             </button>
           </div>
         ) : (
           <div className="max-w-xl mx-auto space-y-6">
-            {/* Top Star Icon */}
-            <div className="w-12 h-12 rounded-2xl bg-gray-50 border border-gray-200 text-gray-900 flex items-center justify-center mx-auto shadow-2xs">
+            {/* Top Icon */}
+            <div
+              className={`w-12 h-12 rounded-2xl flex items-center justify-center mx-auto border ${
+                isGenz
+                  ? "bg-indigo-500/10 border-indigo-500/30 text-indigo-400 shadow-[0_0_15px_rgba(99,102,241,0.3)]"
+                  : "bg-slate-100 border-slate-200 text-slate-900"
+              }`}
+            >
               <Sparkles className="w-6 h-6" />
             </div>
 
             {/* Title */}
             <div>
-              <h2 className="text-lg font-bold text-gray-900">How would you rate your experience?</h2>
-              <p className="text-xs text-gray-400 mt-1">Select your satisfaction rating below</p>
+              <h2 className="text-lg font-bold">How would you rate your experience?</h2>
+              <p className={`text-xs mt-1 ${isGenz ? "text-slate-400" : "text-slate-500"}`}>
+                Select your satisfaction rating below
+              </p>
             </div>
 
             {/* 5-Star Interactive Rating */}
@@ -91,14 +109,18 @@ export default function Feedback() {
                     onClick={() => setRating(star)}
                     onMouseEnter={() => setHoveredRating(star)}
                     onMouseLeave={() => setHoveredRating(0)}
-                    className="p-1 transition-transform hover:scale-110 focus:outline-none"
+                    className="p-1 transition-transform hover:scale-125 focus:outline-none"
                     title={`${star} star${star > 1 ? "s" : ""}`}
                   >
                     <Star
                       className={`w-8 h-8 transition-colors ${
                         isFilled
-                          ? "fill-gray-900 text-gray-900"
-                          : "text-gray-300 hover:text-gray-500"
+                          ? isGenz
+                            ? "fill-amber-300 text-amber-300 filter drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]"
+                            : "fill-slate-900 text-slate-900"
+                          : isGenz
+                          ? "text-slate-600 hover:text-slate-400"
+                          : "text-slate-300 hover:text-slate-500"
                       }`}
                     />
                   </button>
@@ -106,34 +128,48 @@ export default function Feedback() {
               })}
             </div>
 
-            {/* Feedback Textarea with Counter */}
+            {/* Feedback Textarea */}
             <div className="text-left space-y-1">
               <textarea
                 value={message}
                 onChange={(e) => setMessage(e.target.value.slice(0, 500))}
-                placeholder="Share your thoughts (optional)..."
+                placeholder="Share thoughts, feature requests, or notes on screening accuracy..."
                 rows={4}
-                className="w-full text-xs text-gray-900 placeholder-gray-400 bg-gray-50 border border-gray-200 rounded-xl p-3.5 focus:outline-none focus:ring-1 focus:ring-gray-900 focus:border-gray-900 resize-none leading-relaxed"
+                className={`w-full text-xs rounded-xl p-3.5 focus:outline-none transition-all resize-none border ${
+                  isGenz
+                    ? "bg-[#141724] border-white/10 text-slate-100 placeholder-slate-500 focus:border-indigo-500/80"
+                    : "bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 focus:border-slate-900"
+                }`}
               />
-              <div className="flex justify-end text-[11px] text-gray-400 font-mono">
+              <div className="flex justify-end text-[11px] font-mono opacity-50">
                 {message.length}/500
               </div>
             </div>
 
             {errorMessage && (
-              <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center justify-center gap-2">
+              <div
+                className={`p-3 rounded-xl border text-xs flex items-center justify-center gap-2 ${
+                  isGenz
+                    ? "bg-rose-950/40 border-rose-500/40 text-rose-300"
+                    : "bg-rose-50 border-rose-200 text-rose-700"
+                }`}
+              >
                 <AlertCircle className="w-4 h-4 shrink-0" />
                 <span>{errorMessage}</span>
               </div>
             )}
 
-            {/* Action Buttons (Matching Wireframe 1) */}
+            {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
               <button
                 type="button"
                 onClick={() => handleSubmit("feedback")}
                 disabled={isSubmitting}
-                className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-gray-900 text-white hover:bg-black text-xs font-bold shadow-xs transition-colors disabled:opacity-40"
+                className={`w-full sm:w-auto px-6 py-2.5 rounded-xl text-xs font-bold text-white transition-all disabled:opacity-40 shadow-xs ${
+                  isGenz
+                    ? "bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 shadow-[0_0_20px_-3px_rgba(99,102,241,0.5)]"
+                    : "bg-slate-900 hover:bg-black"
+                }`}
               >
                 {isSubmitting ? "Submitting..." : "Submit Feedback"}
               </button>
@@ -142,20 +178,25 @@ export default function Feedback() {
                 type="button"
                 onClick={() => handleSubmit("bug")}
                 disabled={isSubmitting}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-white border border-gray-300 text-gray-800 hover:bg-gray-50 text-xs font-bold shadow-2xs transition-colors disabled:opacity-40"
+                className={`w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold border transition-all disabled:opacity-40 ${
+                  isGenz
+                    ? "bg-white/[0.04] border-white/10 text-slate-200 hover:bg-white/10"
+                    : "bg-white border-slate-300 text-slate-800 hover:bg-slate-50 shadow-2xs"
+                }`}
               >
-                <Bug className="w-3.5 h-3.5 text-gray-600" />
+                <Bug className="w-3.5 h-3.5 text-rose-400" />
                 <span>Report a Bug</span>
               </button>
             </div>
 
-            {/* Footer Quote (Matching Wireframe 1) */}
-            <p className="text-[11px] text-gray-400 italic pt-6">
-              Together, we can make hiring simpler and smarter.
+            {/* Footer Quote */}
+            <p className="text-[11px] opacity-50 italic pt-4 flex items-center justify-center gap-1">
+              <span>Together, we make hiring smarter and teams brighter.</span>
+              <Heart className="w-3 h-3 text-rose-500 inline fill-current" />
             </p>
           </div>
         )}
-      </div>
+      </BentoCard>
     </div>
   );
 }

@@ -1,369 +1,445 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router";
 import {
-  Upload,
+  UploadCloud,
   FileText,
-  Trash2,
-  AlertCircle,
-  CheckCircle2,
-  ArrowRight,
-  RefreshCw,
-  Sparkles,
   Users,
-  Briefcase,
+  CheckCircle2,
+  AlertCircle,
+  RefreshCw,
+  Trash2,
+  ArrowRight,
+  Sparkles,
   Layers,
+  Briefcase,
+  X,
 } from "lucide-react";
 import { useRecruvo } from "../context/RecruvoContext";
+import BentoCard from "../components/ui/BentoCard";
 
 export default function UploadResumes() {
   const navigate = useNavigate();
-  const { uploadResumesBatch, deleteResume, candidates, activeJob } = useRecruvo();
+  const { uploadResumesBatch, candidates, deleteResume, activeJob, theme } = useRecruvo();
+  const isGenz = theme === "genz";
 
-  const [filesToUpload, setFilesToUpload] = useState([]);
+  const [selectedFiles, setSelectedFiles] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
-  const [uploadResults, setUploadResults] = useState([]);
-  const [generalError, setGeneralError] = useState(null);
+  const [uploadProgress, setUploadProgress] = useState(null);
+  const [errorMessage, setErrorMessage] = useState(null);
   const [successToast, setSuccessToast] = useState(null);
+  const [isDragOver, setIsDragOver] = useState(false);
   const [deletingCandidateId, setDeletingCandidateId] = useState(null);
 
-  const handleFileSelect = (e) => {
-    if (e.target.files && e.target.files.length > 0) {
-      const newFiles = Array.from(e.target.files).map((file) => ({
-        rawFile: file,
-        id: `${file.name}-${Date.now()}-${Math.random()}`,
-        name: file.name,
-        size: (file.size / 1024).toFixed(1) + " KB",
-        status: "pending", // pending | success | error
-        error: null,
-      }));
-      setFilesToUpload((prev) => [...prev, ...newFiles]);
-      setGeneralError(null);
+  const handleFileSelection = (e) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length > 0) {
+      setSelectedFiles((prev) => [...prev, ...files]);
+      setErrorMessage(null);
     }
   };
 
-  const handleRemoveFile = (fileId) => {
-    setFilesToUpload((prev) => prev.filter((f) => f.id !== fileId));
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    const files = Array.from(e.dataTransfer.files || []);
+    if (files.length > 0) {
+      setSelectedFiles((prev) => [...prev, ...files]);
+      setErrorMessage(null);
+    }
   };
 
-  const handleUploadBatch = async () => {
-    if (filesToUpload.length === 0 || isUploading) return;
+  const removeSelectedFile = (index) => {
+    setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleUploadAll = async () => {
+    if (selectedFiles.length === 0) {
+      setErrorMessage("Please select at least one resume file.");
+      return;
+    }
 
     setIsUploading(true);
-    setGeneralError(null);
-
-    const rawFiles = filesToUpload.map((f) => f.rawFile);
+    setErrorMessage(null);
+    setSuccessToast(null);
 
     try {
-      const results = await uploadResumesBatch(rawFiles);
-      setUploadResults(results);
+      const results = await uploadResumesBatch(selectedFiles, (progress) => {
+        setUploadProgress(progress);
+      });
 
-      // Update individual file status based on API results
-      setFilesToUpload((prev) =>
-        prev.map((item) => {
-          const matched = results.find((r) => r.filename === item.name);
-          if (!matched) return item;
-          if (matched.ignored || matched.error) {
-            return {
-              ...item,
-              status: "error",
-              error: matched.reason || matched.error || "Document rejected by parser",
-            };
-          }
-          return {
-            ...item,
-            status: "success",
-            candidateName: matched.resume?.name || "Extracted Profile",
-          };
-        })
-      );
-      setSuccessToast(`Successfully parsed and saved ${rawFiles.length} candidate resume(s)!`);
-      setTimeout(() => setSuccessToast(null), 3000);
+      const successCount = results.filter((r) => !r.ignored && !r.error).length;
+      setSuccessToast(`Successfully parsed and loaded ${successCount} candidate profile(s)!`);
+      setSelectedFiles([]);
+      setTimeout(() => setSuccessToast(null), 4000);
     } catch (err) {
-      setGeneralError(err.message || "Failed to process resume batch.");
+      setErrorMessage(err.message || "Failed to process resumes.");
     } finally {
       setIsUploading(false);
+      setUploadProgress(null);
     }
   };
 
-  const handleDeleteCandidate = async (candId) => {
+  const handleDeleteCandidate = async (id) => {
     try {
-      await deleteResume(candId);
+      await deleteResume(id);
       setDeletingCandidateId(null);
-      setSuccessToast("Candidate resume deleted successfully.");
+      setSuccessToast(`Candidate #${id} deleted.`);
       setTimeout(() => setSuccessToast(null), 3000);
     } catch (err) {
-      setGeneralError(err.message || "Failed to delete candidate resume.");
+      setErrorMessage(err.message || "Failed to delete candidate");
     }
   };
 
-  const allSuccessCount = filesToUpload.filter((f) => f.status === "success").length;
-
   return (
-    <div className="space-y-6 animate-fadeIn max-w-5xl mx-auto">
-      {/* Page Header */}
+    <div className="space-y-8 animate-fadeIn max-w-6xl mx-auto">
+      {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-gray-900">Upload Candidate Resumes</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
-            Upload candidate resumes to extract structured profile information and run AI matching against your active JD.
+          <h1 className="text-2xl font-bold tracking-tight">Candidate Resume Processing</h1>
+          <p className={`text-xs md:text-sm mt-0.5 ${isGenz ? "text-slate-400" : "text-slate-500"}`}>
+            Batch upload candidate resumes (PDF, DOCX, TXT). AI automatically extracts contact details, skills, work experience, and educational background.
           </p>
         </div>
 
         {activeJob && (
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gray-100 border border-gray-200 text-xs font-semibold text-gray-800 shrink-0">
-            <Briefcase className="w-3.5 h-3.5 text-gray-600" />
-            <span>Target JD: {activeJob.job_description?.title || "Active Job"}</span>
+          <div
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full border text-xs font-semibold ${
+              isGenz
+                ? "bg-indigo-500/10 border-indigo-500/30 text-indigo-300"
+                : "bg-slate-50 border-slate-200 text-slate-800"
+            }`}
+          >
+            <Briefcase className="w-3.5 h-3.5 opacity-60" />
+            <span>Target Requisition: {activeJob.job_description?.title || "Active JD"}</span>
           </div>
         )}
       </div>
 
-      {successToast && (
-        <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center gap-2 animate-fadeIn">
-          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-          <span>{successToast}</span>
-        </div>
-      )}
-
-      {/* Main Drag & Drop Box */}
-      <div className="bg-white border border-gray-200 rounded-2xl p-8 shadow-xs">
-        <div className="border-2 border-dashed border-gray-300 hover:border-gray-900/60 rounded-xl p-10 text-center transition-all bg-gray-50/50">
-          <div className="w-14 h-14 rounded-2xl bg-white shadow-xs border border-gray-200 flex items-center justify-center mx-auto mb-4 text-gray-800">
-            <Upload className="w-7 h-7 text-gray-800" />
-          </div>
-          <h3 className="text-sm font-bold text-gray-900 mb-1">Drag and drop resume files here</h3>
-          <p className="text-xs text-gray-500 mb-5">
-            Supported formats: PDF, DOCX, TXT. You can upload multiple candidate resumes at once.
-          </p>
-
-          <label className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gray-900 text-white text-xs font-semibold hover:bg-black cursor-pointer shadow-xs transition-colors">
-            <FileText className="w-4 h-4" />
-            <span>Select Resume Files</span>
-            <input
-              type="file"
-              multiple
-              accept=".pdf,.docx,.doc,.txt"
-              onChange={handleFileSelect}
-              className="hidden"
-              disabled={isUploading}
-            />
+      {/* Upload Zone Card */}
+      <BentoCard className="p-6 md:p-8">
+        <div
+          onDragOver={(e) => {
+            e.preventDefault();
+            setIsDragOver(true);
+          }}
+          onDragLeave={() => setIsDragOver(false)}
+          onDrop={handleDrop}
+          className={`border-2 border-dashed rounded-2xl p-8 md:p-12 text-center transition-all ${
+            isDragOver
+              ? isGenz
+                ? "border-indigo-400 bg-indigo-500/10 shadow-[0_0_25px_rgba(99,102,241,0.3)]"
+                : "border-slate-900 bg-slate-50"
+              : isGenz
+              ? "border-white/10 hover:border-indigo-500/40 bg-white/[0.02]"
+              : "border-slate-200 hover:border-slate-300 bg-slate-50/50"
+          }`}
+        >
+          <input
+            type="file"
+            id="multi-resume-input"
+            multiple
+            accept=".pdf,.docx,.doc,.txt"
+            onChange={handleFileSelection}
+            className="hidden"
+          />
+          <label htmlFor="multi-resume-input" className="cursor-pointer block">
+            <div
+              className={`w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4 transition-all ${
+                isGenz
+                  ? "bg-gradient-to-br from-indigo-500/20 to-purple-500/20 text-indigo-400 border border-indigo-500/30 shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)]"
+                  : "bg-slate-100 text-slate-800 border border-slate-200"
+              }`}
+            >
+              <UploadCloud className="w-7 h-7" />
+            </div>
+            <h3 className="text-base font-bold mb-1">
+              Drag and drop candidate resumes
+            </h3>
+            <p className={`text-xs max-w-sm mx-auto mb-4 ${isGenz ? "text-slate-400" : "text-slate-500"}`}>
+              Multi-file batch processing supported. Select multiple PDF, DOCX, or TXT documents.
+            </p>
+            <span
+              className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold border transition-all ${
+                isGenz
+                  ? "bg-white/[0.05] border-white/10 text-slate-200 hover:bg-white/10"
+                  : "bg-white border-slate-200 text-slate-800 hover:bg-slate-100"
+              }`}
+            >
+              Select Resume Files
+            </span>
           </label>
         </div>
 
-        {/* Selected Files List */}
-        {filesToUpload.length > 0 && (
+        {/* Selected Staged Files List */}
+        {selectedFiles.length > 0 && (
           <div className="mt-6 space-y-3">
-            <div className="flex items-center justify-between">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400">
-                Selected Files Queue ({filesToUpload.length})
-              </h4>
+            <div className="flex items-center justify-between text-xs font-bold">
+              <span className={isGenz ? "text-slate-300" : "text-slate-700"}>
+                Staged for Extraction ({selectedFiles.length} files)
+              </span>
               <button
-                onClick={() => setFilesToUpload([])}
-                disabled={isUploading}
-                className="text-xs text-gray-400 hover:text-gray-600 font-medium"
+                onClick={() => setSelectedFiles([])}
+                className="text-rose-500 hover:underline text-[11px]"
               >
-                Clear Queue
+                Clear All
               </button>
             </div>
 
-            <div className="divide-y divide-gray-100 border border-gray-200 rounded-xl overflow-hidden">
-              {filesToUpload.map((item) => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 max-h-48 overflow-y-auto p-1">
+              {selectedFiles.map((file, idx) => (
                 <div
-                  key={item.id}
-                  className="p-3.5 bg-white flex items-center justify-between gap-3 hover:bg-gray-50/60 transition-colors"
+                  key={idx}
+                  className={`flex items-center justify-between p-2.5 rounded-xl border text-xs ${
+                    isGenz
+                      ? "bg-[#161828] border-white/10 text-slate-200"
+                      : "bg-slate-50 border-slate-200 text-slate-800"
+                  }`}
                 >
-                  <div className="flex items-center gap-3 overflow-hidden">
-                    <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-gray-600 shrink-0">
-                      <FileText className="w-4 h-4" />
-                    </div>
-                    <div className="truncate">
-                      <p className="text-xs font-semibold text-gray-900 truncate">{item.name}</p>
-                      <p className="text-[11px] text-gray-400">{item.size}</p>
-                    </div>
+                  <div className="flex items-center gap-2 truncate pr-2">
+                    <FileText className="w-4 h-4 text-indigo-400 shrink-0" />
+                    <span className="truncate font-medium">{file.name}</span>
                   </div>
-
-                  {/* Status Badges */}
-                  <div className="flex items-center gap-3">
-                    {item.status === "pending" && (
-                      <span className="text-[11px] text-gray-400 font-medium">Ready</span>
-                    )}
-
-                    {item.status === "success" && (
-                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
-                        <CheckCircle2 className="w-3 h-3" />
-                        Parsed ({item.candidateName})
-                      </span>
-                    )}
-
-                    {item.status === "error" && (
-                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-red-700 bg-red-50 px-2 py-0.5 rounded-md border border-red-200">
-                        <AlertCircle className="w-3 h-3" />
-                        {item.error || "Failed"}
-                      </span>
-                    )}
-
-                    {!isUploading && item.status !== "success" && (
-                      <button
-                        onClick={() => handleRemoveFile(item.id)}
-                        className="p-1 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    )}
-                  </div>
+                  <button
+                    onClick={() => removeSelectedFile(idx)}
+                    className="p-1 rounded text-slate-400 hover:text-rose-400 shrink-0"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
                 </div>
               ))}
             </div>
+          </div>
+        )}
 
-            {/* Action Bar */}
-            <div className="pt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <span className="text-xs text-gray-500">
-                {allSuccessCount > 0
-                  ? `✓ ${allSuccessCount} candidate(s) successfully parsed with Gemini.`
-                  : "Click extract to process all files."}
+        {/* Upload Progress Bar */}
+        {isUploading && uploadProgress && (
+          <div className="mt-6 space-y-2">
+            <div className="flex justify-between text-xs font-bold">
+              <span className={isGenz ? "text-indigo-300" : "text-slate-700"}>
+                Processing {uploadProgress.current} of {uploadProgress.total}: {uploadProgress.filename}
               </span>
-
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={handleUploadBatch}
-                  disabled={filesToUpload.length === 0 || isUploading}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gray-900 text-white hover:bg-black text-xs font-semibold shadow-xs transition-all disabled:opacity-40"
-                >
-                  {isUploading ? (
-                    <>
-                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                      Extracting Profiles with Gemini...
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="w-3.5 h-3.5" />
-                      Extract Profiles
-                    </>
-                  )}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => navigate("/analysis")}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gray-900 text-white hover:bg-black text-xs font-bold shadow-xs transition-all"
-                >
-                  <span>Analyze Resumes</span>
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              </div>
+              <span className="font-mono">
+                {Math.round((uploadProgress.current / uploadProgress.total) * 100)}%
+              </span>
+            </div>
+            <div className={`h-2 rounded-full overflow-hidden ${isGenz ? "bg-white/10" : "bg-slate-100"}`}>
+              <div
+                className={`h-full rounded-full transition-all duration-300 ${
+                  isGenz ? "bg-gradient-to-r from-indigo-500 to-violet-500" : "bg-slate-900"
+                }`}
+                style={{
+                  width: `${(uploadProgress.current / uploadProgress.total) * 100}%`,
+                }}
+              />
             </div>
           </div>
         )}
-      </div>
 
-      {generalError && (
-        <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2.5">
-          <AlertCircle className="w-4 h-4 shrink-0" />
-          <span>{generalError}</span>
-        </div>
-      )}
-
-      {/* Already Uploaded Candidates in DB */}
-      <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-xs">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
-              <Users className="w-4 h-4 text-gray-700" />
-              Existing Candidate Database ({candidates.length})
-            </h3>
-            <p className="text-xs text-gray-400">
-              Profiles stored and ready for matching against any Job Description
-            </p>
+        {/* Error / Success Toast */}
+        {errorMessage && (
+          <div
+            className={`mt-4 p-3.5 rounded-xl border text-xs flex items-center gap-2.5 ${
+              isGenz
+                ? "bg-rose-950/40 border-rose-500/40 text-rose-300"
+                : "bg-rose-50 border-rose-200 text-rose-700"
+            }`}
+          >
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            <span>{errorMessage}</span>
           </div>
+        )}
 
-          {candidates.length > 0 && (
+        {successToast && (
+          <div
+            className={`mt-4 p-3.5 rounded-xl border text-xs flex items-center justify-between ${
+              isGenz
+                ? "bg-emerald-950/40 border-emerald-500/40 text-emerald-300"
+                : "bg-emerald-50 border-emerald-200 text-emerald-800"
+            }`}
+          >
+            <div className="flex items-center gap-2.5">
+              <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
+              <span>{successToast}</span>
+            </div>
             <button
               onClick={() => navigate("/analysis")}
-              className="inline-flex items-center gap-1 text-xs font-semibold text-gray-900 hover:underline"
+              className="font-bold underline text-xs ml-2 flex items-center gap-1 hover:opacity-80"
             >
-              <span>Go to Analysis</span>
+              <span>View Fit & Screen</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
-          )}
+          </div>
+        )}
+
+        {/* Action Button */}
+        <div className="mt-6 flex justify-end">
+          <button
+            onClick={handleUploadAll}
+            disabled={isUploading || selectedFiles.length === 0}
+            className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl text-xs font-bold transition-all disabled:opacity-40 shadow-sm ${
+              isGenz
+                ? "bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white shadow-[0_0_20px_-3px_rgba(99,102,241,0.5)]"
+                : "bg-slate-900 text-white hover:bg-black"
+            }`}
+          >
+            {isUploading ? (
+              <>
+                <RefreshCw className="w-4 h-4 animate-spin" />
+                <span>Extracting Resumes with AI...</span>
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-4 h-4" />
+                <span>Upload & Extract {selectedFiles.length} Resume(s)</span>
+              </>
+            )}
+          </button>
+        </div>
+      </BentoCard>
+
+      {/* Uploaded Candidate Profiles Roster */}
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-base font-bold flex items-center gap-2">
+            <Users className="w-4 h-4 text-indigo-500" />
+            Uploaded Candidates Roster ({candidates.length})
+          </h2>
+          <span className={`text-xs ${isGenz ? "text-slate-400" : "text-slate-500"}`}>
+            Loaded in PostgreSQL persistence
+          </span>
         </div>
 
         {candidates.length === 0 ? (
-          <div className="text-center py-8 text-xs text-gray-400">
-            No candidates uploaded yet. Upload resumes above to populate candidate profiles.
-          </div>
+          <BentoCard className="p-8 text-center">
+            <Users className="w-8 h-8 opacity-40 mx-auto mb-2" />
+            <p className="font-bold text-sm">No candidate resumes uploaded yet</p>
+            <p className={`text-xs mt-1 ${isGenz ? "text-slate-400" : "text-slate-500"}`}>
+              Drop resumes in the box above to extract profiles and run fit evaluations.
+            </p>
+          </BentoCard>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {candidates.map((cand) => {
               const c = cand.resume || cand;
+              const name = c.name || `Candidate #${cand.id}`;
+              const role = c.experience?.[0]?.role || "Candidate Profile";
+              const skills = c.skills || [];
+
               return (
-                <div
-                  key={cand.id}
-                  className="p-3.5 bg-gray-50 border border-gray-200/80 rounded-xl hover:bg-white hover:border-gray-300 transition-all flex items-start justify-between gap-3 group"
-                >
-                  <div className="flex items-start gap-3 overflow-hidden flex-1">
-                    <div className="w-8 h-8 rounded-full bg-gray-200 text-gray-700 font-bold text-xs flex items-center justify-center shrink-0">
-                      {(c.name || "C").charAt(0).toUpperCase()}
+                <BentoCard key={cand.id} className="p-5 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span
+                        className={`text-[10.5px] font-bold px-2 py-0.5 rounded-full border ${
+                          isGenz
+                            ? "bg-white/[0.04] text-indigo-300 border-white/10"
+                            : "bg-slate-100 text-slate-700 border-slate-200"
+                        }`}
+                      >
+                        #{cand.id}
+                      </span>
+                      <button
+                        onClick={() => setDeletingCandidateId(cand.id)}
+                        className={`p-1.5 rounded-lg text-xs transition-colors ${
+                          isGenz
+                            ? "text-slate-400 hover:text-rose-400 hover:bg-rose-500/10"
+                            : "text-slate-500 hover:text-rose-600 hover:bg-rose-50"
+                        }`}
+                        title="Delete Candidate"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
                     </div>
-                    <div className="overflow-hidden flex-1">
-                      <p className="text-xs font-bold text-gray-900 truncate">{c.name || "Unnamed Candidate"}</p>
-                      <p className="text-[11px] text-gray-500 truncate">
-                        {c.experience?.[0]?.role || "Candidate Profile"}
-                      </p>
-                      <div className="flex flex-wrap gap-1 mt-1.5">
-                        {(c.skills || []).slice(0, 3).map((skill, sIdx) => (
-                          <span
-                            key={sIdx}
-                            className="px-1.5 py-0.5 rounded bg-white border border-gray-200 text-[10px] text-gray-600 truncate max-w-[90px]"
-                          >
-                            {skill}
-                          </span>
-                        ))}
-                      </div>
+
+                    <h3 className="text-base font-bold tracking-tight">{name}</h3>
+                    <p className={`text-xs mt-0.5 ${isGenz ? "text-indigo-300" : "text-slate-600"}`}>
+                      {role}
+                    </p>
+
+                    {c.email && (
+                      <p className={`text-[11px] mt-1 font-mono opacity-70`}>{c.email}</p>
+                    )}
+
+                    {/* Skill Pills preview */}
+                    <div className="mt-3 flex flex-wrap gap-1">
+                      {skills.slice(0, 4).map((sk, idx) => (
+                        <span
+                          key={idx}
+                          className={`px-2 py-0.5 rounded-full text-[10px] font-medium border ${
+                            isGenz
+                              ? "bg-indigo-500/10 border-indigo-500/30 text-indigo-300"
+                              : "bg-slate-100 border-slate-200 text-slate-700"
+                          }`}
+                        >
+                          {sk}
+                        </span>
+                      ))}
+                      {skills.length > 4 && (
+                        <span className="text-[10px] opacity-60 self-center">
+                          +{skills.length - 4} more
+                        </span>
+                      )}
                     </div>
                   </div>
 
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setDeletingCandidateId(cand.id);
-                    }}
-                    className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors shrink-0 opacity-80 group-hover:opacity-100"
-                    title="Delete Resume"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </div>
+                  <div className="mt-5 pt-3 border-t border-white/[0.06] flex items-center justify-between">
+                    <NavLink
+                      to={`/analysis/${cand.id}`}
+                      className={`text-xs font-bold flex items-center gap-1 hover:underline ${
+                        isGenz ? "text-indigo-400" : "text-slate-900"
+                      }`}
+                    >
+                      <span>Full Analysis</span>
+                      <ArrowRight className="w-3 h-3" />
+                    </NavLink>
+
+                    <button
+                      onClick={() => navigate(`/analysis/${cand.id}`)}
+                      className={`text-xs font-bold py-1 px-3 rounded-lg border transition-all ${
+                        isGenz
+                          ? "bg-white/[0.04] border-white/10 text-slate-200 hover:bg-white/10"
+                          : "bg-white border-slate-200 text-slate-800 hover:bg-slate-100"
+                      }`}
+                    >
+                      Inspect Profile
+                    </button>
+                  </div>
+                </BentoCard>
               );
             })}
           </div>
         )}
       </div>
 
-      {/* DELETE CANDIDATE CONFIRMATION MODAL */}
+      {/* DELETE CANDIDATE MODAL */}
       {deletingCandidateId && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn">
-          <div className="bg-white border border-gray-200 rounded-2xl max-w-sm w-full p-6 shadow-2xl space-y-4">
-            <div className="w-10 h-10 rounded-xl bg-red-50 text-red-600 flex items-center justify-center">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn">
+          <div
+            className={`w-full max-w-sm rounded-2xl border p-6 shadow-2xl space-y-4 ${
+              isGenz ? "bg-[#141726] border-white/10 text-slate-100" : "bg-white border-slate-200 text-slate-900"
+            }`}
+          >
+            <div className="w-10 h-10 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center">
               <Trash2 className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-gray-900">Delete Candidate Resume</h3>
-              <p className="text-xs text-gray-500 mt-1">
+              <h3 className="text-sm font-bold">Delete Candidate Profile</h3>
+              <p className={`text-xs mt-1 ${isGenz ? "text-slate-400" : "text-slate-500"}`}>
                 Are you sure you want to delete candidate #{deletingCandidateId}? All associated screening scores will also be removed.
               </p>
             </div>
-            <div className="flex items-center justify-end gap-2 pt-2">
+            <div className="flex items-center justify-end gap-2.5 pt-2">
               <button
                 onClick={() => setDeletingCandidateId(null)}
-                className="px-3.5 py-1.5 rounded-lg border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50"
+                className="px-3.5 py-1.5 rounded-lg border border-white/10 text-xs font-semibold hover:opacity-80"
               >
                 Cancel
               </button>
               <button
                 onClick={() => handleDeleteCandidate(deletingCandidateId)}
-                className="px-4 py-1.5 rounded-lg bg-red-600 text-white text-xs font-bold hover:bg-red-700"
+                className="px-4 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-xs"
               >
-                Delete Resume
+                Delete
               </button>
             </div>
           </div>

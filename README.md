@@ -8,6 +8,12 @@
 
 ## 🌟 Key Features
 
+### 0. 🎨 Dual-Theme Visual Identity (CLASSIC ◐ GEN-Z)
+- **Instant Global Toggle:** Switch themes instantly with zero page reload via the header toggle or Settings tab.
+- **CLASSIC Theme:** Clean, professional, minimal, recruiter-friendly with crisp slate/white surfaces, high readability, and Notion/Linear aesthetic.
+- **GEN-Z Theme:** Modern AI-native developer aesthetic with dark obsidian surfaces (`#08090E`), glowing accents, bento layouts, oversized statistics, radial score rings, and subtle gradient trims inspired by modern AI startup interfaces.
+- **Persistent Preference:** Remembers user visual selection across browser sessions via `localStorage`.
+
 ### 1. 📋 Job Description Intelligence
 - **Multi-Format Upload:** Upload JDs in **PDF**, **DOCX**, or **TXT** format, or paste raw job requisitions.
 - **Structured AI Extraction:** Automatically extracts job title, hiring company, location, experience requirements, required skills, preferred qualifications, and core responsibilities.
