@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate, NavLink } from "react-router";
 import {
   UploadCloud,
   FileText,
@@ -19,8 +19,8 @@ import BentoCard from "../components/ui/BentoCard";
 
 export default function UploadResumes() {
   const navigate = useNavigate();
-  const { uploadResumesBatch, candidates, deleteResume, activeJob, theme } = useRecruvo();
-  const isGenz = theme === "genz";
+  const { uploadResumesBatch, candidates, deleteResume, activeJob, theme, isVibe } = useRecruvo();
+  const isGenz = isVibe;
 
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
@@ -285,12 +285,12 @@ export default function UploadResumes() {
             {isUploading ? (
               <>
                 <RefreshCw className="w-4 h-4 animate-spin" />
-                <span>Extracting Resumes with AI...</span>
+                <span>Processing Resumes...</span>
               </>
             ) : (
               <>
-                <Sparkles className="w-4 h-4" />
-                <span>Upload & Extract {selectedFiles.length} Resume(s)</span>
+                <UploadCloud className="w-4 h-4" />
+                <span>Upload & Parse {selectedFiles.length} Resume(s)</span>
               </>
             )}
           </button>

@@ -21,8 +21,8 @@ import {
 } from "../api/exports";
 
 export default function ExportResults() {
-  const { candidates, screenings, activeJob, theme } = useRecruvo();
-  const isGenz = theme === "genz";
+  const { candidates, screenings, activeJob, theme, isVibe } = useRecruvo();
+  const isGenz = isVibe;
 
   // 1. Single Candidate State
   const [selectedSingleId, setSelectedSingleId] = useState(

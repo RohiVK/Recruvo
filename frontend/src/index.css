@@ -40,50 +40,13 @@
     --shadow-elevated: 0 4px 6px -1px rgba(0, 0, 0, 0.06), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
   }
 
-  [data-theme="genz"],
-  .theme-genz {
-    --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    --font-heading: 'Plus Jakarta Sans', 'Inter', sans-serif;
-    --font-mono: 'JetBrains Mono', monospace;
-
-    /* Theme Tokens - Gen-Z (AI-Native, Dark Obsidian, Glowing Accents) */
-    --color-bg-app: #08090E;
-    --color-bg-surface: #0E1018;
-    --color-bg-card: #141724;
-    --color-bg-card-hover: #1A1E2F;
-    --color-bg-muted: #1A1D2D;
-    --color-border-subtle: rgba(255, 255, 255, 0.08);
-    --color-border-strong: rgba(139, 92, 246, 0.28);
-    --color-text-primary: #F8FAFC;
-    --color-text-secondary: #94A3B8;
-    --color-text-muted: #64748B;
-    --color-accent-primary: #6366F1;
-    --color-accent-primary-hover: #4F46E5;
-    --color-accent-primary-text: #FFFFFF;
-    --color-accent-badge: rgba(99, 102, 241, 0.14);
-    --color-accent-badge-text: #A5B4FC;
-    --color-accent-glow: 0 0 25px -5px rgba(99, 102, 241, 0.35);
-    --color-success-bg: rgba(16, 185, 129, 0.12);
-    --color-success-border: rgba(16, 185, 129, 0.3);
-    --color-success-text: #34D399;
-    --color-warning-bg: rgba(245, 158, 11, 0.12);
-    --color-warning-border: rgba(245, 158, 11, 0.3);
-    --color-warning-text: #FBBF24;
-    --color-danger-bg: rgba(239, 68, 68, 0.12);
-    --color-danger-border: rgba(239, 68, 68, 0.3);
-    --color-danger-text: #F87171;
-    --bento-gradient: linear-gradient(135deg, rgba(99, 102, 241, 0.06) 0%, rgba(168, 85, 247, 0.03) 100%);
-    --glass-backdrop: blur(12px);
-    --shadow-card: 0 4px 20px -2px rgba(0, 0, 0, 0.5), inset 0 1px 0 0 rgba(255, 255, 255, 0.06);
-    --shadow-elevated: 0 10px 30px -5px rgba(0, 0, 0, 0.7), 0 0 20px -5px rgba(99, 102, 241, 0.2);
-  }
-
   body {
     font-family: var(--font-sans);
     background-color: var(--color-bg-app);
     color: var(--color-text-primary);
     -webkit-font-smoothing: antialiased;
     transition: background-color 0.25s ease, color 0.25s ease;
+    min-height: 100vh;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -162,6 +125,27 @@
   animation: shimmer 2.5s infinite;
 }
 
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton-shimmer-classic {
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.8s ease-in-out infinite;
+}
+
+.skeleton-shimmer-vibe {
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.03) 25%, rgba(99, 102, 241, 0.14) 50%, rgba(255, 255, 255, 0.03) 75%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.8s ease-in-out infinite;
+}
+
 /* Dual-Theme Component Utility Classes */
 .recruvo-card {
   background-color: var(--color-bg-card);
@@ -190,6 +174,7 @@
   transform: translateY(-1px);
 }
 
+[data-theme="vibe"] .recruvo-bento::before,
 [data-theme="genz"] .recruvo-bento::before {
   content: '';
   position: absolute;
@@ -197,7 +182,7 @@
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.4), transparent);
+  background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.5), transparent);
 }
 
 .recruvo-badge {

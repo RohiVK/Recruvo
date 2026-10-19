@@ -21,6 +21,7 @@ import { useRecruvo } from "../context/RecruvoContext";
 import RecruvoAIChat from "../components/ai/RecruvoAIChat";
 import BentoCard from "../components/ui/BentoCard";
 import ScoreIndicator from "../components/ui/ScoreIndicator";
+import { SkeletonCard, SkeletonTable } from "../components/ui/Skeleton";
 import { exportResultsCSV } from "../api/exports";
 
 export default function Analysis() {
@@ -33,8 +34,10 @@ export default function Analysis() {
     runScreening,
     deleteResume,
     theme,
+    isLoading,
+    isVibe,
   } = useRecruvo();
-  const isGenz = theme === "genz";
+  const isGenz = isVibe;
 
   const [isBatchRunning, setIsBatchRunning] = useState(false);
   const [screeningProgress, setScreeningProgress] = useState(null);
@@ -180,7 +183,7 @@ export default function Analysis() {
             ) : (
               <>
                 <Play className="w-3.5 h-3.5 fill-current" />
-                <span>Run AI Screening ({candidates.length})</span>
+                <span>Run Screening Evaluation ({candidates.length})</span>
               </>
             )}
           </button>
@@ -253,7 +256,13 @@ export default function Analysis() {
             </span>
           </div>
 
-          {candidateMatchList.length === 0 ? (
+          {isLoading ? (
+            <div className="space-y-3.5">
+              <SkeletonCard height="h-28" />
+              <SkeletonCard height="h-28" />
+              <SkeletonCard height="h-28" />
+            </div>
+          ) : candidateMatchList.length === 0 ? (
             <BentoCard className="p-12 text-center">
               <Users className="w-10 h-10 opacity-30 mx-auto mb-2" />
               <p className="font-bold text-sm">No candidate resumes available</p>

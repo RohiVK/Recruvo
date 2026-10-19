@@ -19,8 +19,8 @@ import ScoreIndicator from "../components/ui/ScoreIndicator";
 import { exportComparisonPDF } from "../api/exports";
 
 export default function CompareCandidates() {
-  const { candidates, screenings, activeJob, theme } = useRecruvo();
-  const isGenz = theme === "genz";
+  const { candidates, screenings, activeJob, theme, isVibe } = useRecruvo();
+  const isGenz = isVibe;
 
   const [candidateAId, setCandidateAId] = useState(
     candidates.length > 0 ? String(candidates[0].id) : ""
@@ -464,9 +464,9 @@ export default function CompareCandidates() {
 
               {/* AI Comparison Summary Card */}
               <div className={`p-5 border-t ${isGenz ? "bg-white/[0.02] border-white/[0.08]" : "bg-slate-50 border-slate-200"}`}>
-                <h3 className="text-xs font-bold uppercase tracking-wider mb-1.5 flex items-center gap-1.5 text-indigo-400">
-                  <Sparkles className="w-3.5 h-3.5" />
-                  AI Comparative Decision Summary
+                <h3 className="text-xs font-bold uppercase tracking-wider mb-1.5 flex items-center gap-1.5 text-slate-800">
+                  <Scale className="w-3.5 h-3.5 text-slate-700" />
+                  Comparative Decision Summary
                 </h3>
                 <p className={`text-xs leading-relaxed ${isGenz ? "text-slate-300" : "text-slate-700"}`}>
                   {nameA} achieved an overall match of {scoreA}% compared to {nameB}'s {scoreB}%.{" "}

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate, NavLink } from "react-router";
 import {
   UploadCloud,
   FileText,
@@ -23,8 +23,8 @@ import BentoCard from "../components/ui/BentoCard";
 
 export default function UploadJD() {
   const navigate = useNavigate();
-  const { uploadJobText, uploadJobFile, activeJob, jobs, setActiveJob, updateJob, deleteJob, theme } = useRecruvo();
-  const isGenz = theme === "genz";
+  const { uploadJobText, uploadJobFile, activeJob, jobs, setActiveJob, updateJob, deleteJob, theme, isVibe } = useRecruvo();
+  const isGenz = isVibe;
 
   const [inputMode, setInputMode] = useState("upload"); // upload | paste
   const [jdText, setJdText] = useState("");
@@ -348,8 +348,8 @@ export default function UploadJD() {
               </>
             ) : (
               <>
-                <Sparkles className="w-4 h-4" />
-                <span>Parse & Extract Job Description</span>
+                <FileText className="w-4 h-4" />
+                <span>Parse Job Description</span>
               </>
             )}
           </button>

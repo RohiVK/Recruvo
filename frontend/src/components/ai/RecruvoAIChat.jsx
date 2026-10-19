@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Send, Bot, User, Sparkles, RefreshCw, AlertCircle, Trash2, Zap, CornerDownLeft } from "lucide-react";
+import { Send, Bot, User, RefreshCw, AlertCircle, Trash2, ArrowRight, MessageSquare } from "lucide-react";
 import { useRecruvo } from "../../context/RecruvoContext";
 
 // Clean formatter that turns markdown artifacts into clean, readable UI elements
-function FormattedMessage({ content, isGenz = false }) {
+function FormattedMessage({ content }) {
   if (!content) return null;
 
   const lines = String(content).split("\n");
@@ -18,14 +18,7 @@ function FormattedMessage({ content, isGenz = false }) {
 
         // Remove markdown horizontal rules
         if (cleanLine === "---" || cleanLine === "***" || cleanLine === "___") {
-          return (
-            <div
-              key={idx}
-              className={`my-2 border-b ${
-                isGenz ? "border-white/10" : "border-slate-200/60"
-              }`}
-            />
-          );
+          return <div key={idx} className="my-2 border-b border-slate-200" />;
         }
 
         if (!cleanLine) {
@@ -59,15 +52,7 @@ function FormattedMessage({ content, isGenz = false }) {
             if (match.index > lastIndex) {
               tokens.push({ type: "text", value: text.slice(lastIndex, match.index) });
             }
-            const tokenStr = match[0];
-            if (tokenStr.startsWith("**") && tokenStr.endsWith("**")) {
-              tokens.push({ type: "bold", value: tokenStr.slice(2, -2) });
-            } else if (
-              (tokenStr.startsWith("*") && tokenStr.endsWith("*")) ||
-              (tokenStr.startsWith("_") && tokenStr.endsWith("_"))
-            ) {
-              tokens.push({ type: "italic", value: tokenStr.slice(1, -1) });
-            }
+            tokens.push({ type: "formatted", value: match[0] });
             lastIndex = pattern.lastIndex;
           }
 
@@ -75,114 +60,59 @@ function FormattedMessage({ content, isGenz = false }) {
             tokens.push({ type: "text", value: text.slice(lastIndex) });
           }
 
-          if (tokens.length === 0) {
-            return text.replace(/\*/g, "");
-          }
-
-          return tokens.map((token, tIdx) => {
-            const cleanVal = token.value.replace(/\*/g, "");
-            if (token.type === "bold") {
-              return (
-                <strong
-                  key={tIdx}
-                  className={`font-semibold ${
-                    isGenz ? "text-indigo-200 font-bold" : "text-slate-900"
-                  }`}
-                >
-                  {cleanVal}
-                </strong>
-              );
+          return tokens.map((tok, tIdx) => {
+            if (tok.type === "text") {
+              return tok.value;
             }
-            if (token.type === "italic") {
-              return (
-                <span
-                  key={tIdx}
-                  className={`italic ${isGenz ? "text-slate-300" : "text-slate-700"}`}
-                >
-                  {cleanVal}
-                </span>
-              );
-            }
-            return cleanVal;
+            const inner = tok.value.replace(/^(\*\*|\*|_)|(\*\*|\*|_)$/g, "");
+            return (
+              <strong key={tIdx} className="font-semibold text-slate-900">
+                {inner}
+              </strong>
+            );
           });
         };
 
         if (isBullet) {
           return (
-            <div
-              key={idx}
-              className={`flex items-start gap-2 pl-1 ${
-                isGenz ? "text-slate-200" : "text-slate-700"
-              }`}
-            >
-              <span
-                className={`font-black select-none leading-tight ${
-                  isGenz ? "text-indigo-400" : "text-slate-400"
-                }`}
-              >
-                •
-              </span>
-              <span className="flex-1">{renderFormattedText(cleanLine)}</span>
+            <div key={idx} className="flex items-start gap-2 pl-1 my-0.5">
+              <span className="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 bg-slate-700" />
+              <span>{renderFormattedText(cleanLine)}</span>
             </div>
           );
         }
 
-        if (prefix) {
+        if (isNumbered) {
           return (
-            <div
-              key={idx}
-              className={`flex items-start gap-2 pl-1 ${
-                isGenz ? "text-slate-200" : "text-slate-700"
-              }`}
-            >
-              <span
-                className={`font-bold select-none min-w-4 leading-tight ${
-                  isGenz ? "text-indigo-400" : "text-slate-500"
-                }`}
-              >
-                {prefix}
-              </span>
-              <span className="flex-1">{renderFormattedText(cleanLine)}</span>
+            <div key={idx} className="flex items-start gap-2 pl-1 my-0.5">
+              <span className="font-bold text-[11px] shrink-0 text-slate-700">{prefix}</span>
+              <span>{renderFormattedText(cleanLine)}</span>
             </div>
           );
         }
 
-        const isHeader = cleanLine.endsWith(":") && cleanLine.length < 60;
-
-        return (
-          <div
-            key={idx}
-            className={
-              isHeader
-                ? `font-bold pt-1 ${isGenz ? "text-indigo-300" : "text-slate-900"}`
-                : isGenz
-                ? "text-slate-200"
-                : "text-slate-700"
-            }
-          >
-            {renderFormattedText(cleanLine)}
-          </div>
-        );
+        return <p key={idx}>{renderFormattedText(cleanLine)}</p>;
       })}
     </div>
   );
 }
 
 export default function RecruvoAIChat({
-  candidateId,
-  comparisonCandidateId,
-  candidateName,
-  comparisonCandidateName,
-  initialSuggestions,
-  title = "Recruvo AI",
+  candidateId = null,
+  candidateName = null,
+  comparisonCandidateId = null,
+  comparisonCandidateName = null,
+  title = "Candidate Inquiry Assistant",
   compact = false,
+  initialSuggestions = [],
 }) {
-  const { sendChat, getChatHistory, clearChatHistory, activeJob, theme } = useRecruvo();
+  const { sendChat, getChatHistory, clearChatHistory, activeJob } = useRecruvo();
+
   const [inputMessage, setInputMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
+
   const messagesEndRef = useRef(null);
-  const isGenz = theme === "genz";
 
   const sessionKey = comparisonCandidateId
     ? `comp-${candidateId}-${comparisonCandidateId}`
@@ -190,46 +120,37 @@ export default function RecruvoAIChat({
 
   const history = getChatHistory(sessionKey);
 
-  // Quick action suggestions
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [history, isSending]);
+
   const defaultSuggestions = comparisonCandidateId
     ? [
-        "Which candidate is stronger technically?",
-        "Who has more relevant experience?",
-        "What are the biggest differences between them?",
-        "Which candidate has fewer skill gaps?",
-        "Summarize the tradeoffs.",
+        `Compare key strengths of ${candidateName || "A"} vs ${comparisonCandidateName || "B"}`,
+        "Which candidate has more relevant technical experience?",
+        "Recommend interview focus areas for both candidates",
       ]
     : candidateId
     ? [
-        "Summarize this candidate",
-        "Suggest interview questions",
-        `Why is ${candidateName || "this candidate"} a good match?`,
-        "What skills are missing?",
-        "What are the biggest concerns?",
+        `Summarize ${candidateName || "candidate"}'s key strengths`,
+        "What required skills is this candidate missing?",
+        "Provide 3 interview questions targeted at this profile",
       ]
     : [
-        "How do these candidates align with the JD?",
-        "What are the most common skill gaps?",
-        "Suggest top interview questions for this role",
+        "How well does our talent pool align with the active role?",
+        "Which candidate is the strongest overall fit?",
+        "Generate a screening summary for active requisition",
       ];
 
-  const suggestions = initialSuggestions || defaultSuggestions;
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [history, isSending]);
+  const suggestions = initialSuggestions.length > 0 ? initialSuggestions : defaultSuggestions;
 
   const handleSend = async (messageToSend = inputMessage) => {
     const text = (messageToSend || "").trim();
     if (!text || isSending) return;
 
     setInputMessage("");
-    setErrorMessage(null);
     setIsSending(true);
+    setErrorMessage(null);
 
     try {
       await sendChat({
@@ -241,7 +162,8 @@ export default function RecruvoAIChat({
         },
       });
     } catch (err) {
-      setErrorMessage(err.message || "Failed to communicate with AI");
+      console.error("Chat send error:", err);
+      setErrorMessage("Could not retrieve response. Please try again.");
     } finally {
       setIsSending(false);
     }
@@ -255,53 +177,28 @@ export default function RecruvoAIChat({
   };
 
   return (
-    <div
-      className={`flex flex-col h-full rounded-2xl border transition-all duration-300 overflow-hidden ${
-        isGenz
-          ? "bg-[#111320] border-white/10 shadow-[0_10px_30px_-5px_rgba(0,0,0,0.5)]"
-          : "bg-white border-slate-200 shadow-xs"
-      }`}
-    >
+    <div className="flex flex-col h-full rounded-2xl border overflow-hidden bg-white border-slate-200 shadow-xs">
       {/* Header */}
-      <div
-        className={`px-4 py-3.5 border-b flex items-center justify-between ${
-          isGenz
-            ? "bg-[#161828]/90 border-white/[0.08]"
-            : "bg-slate-50 border-slate-200"
-        }`}
-      >
+      <div className="px-4 py-3.5 border-b flex items-center justify-between bg-slate-50 border-slate-200">
         <div className="flex items-center gap-2.5">
-          <div
-            className={`w-7 h-7 rounded-xl flex items-center justify-center font-bold transition-all ${
-              isGenz
-                ? "bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-[0_0_12px_rgba(99,102,241,0.5)]"
-                : "bg-slate-900 text-white"
-            }`}
-          >
-            {isGenz ? <Sparkles className="w-4 h-4 text-white animate-pulse" /> : <Bot className="w-4 h-4" />}
+          <div className="w-7 h-7 rounded-xl flex items-center justify-center font-bold bg-slate-900 text-white shadow-xs">
+            <MessageSquare className="w-4 h-4" />
           </div>
           <div>
-            <h3
-              className={`text-xs font-bold leading-tight ${
-                isGenz ? "text-slate-100" : "text-slate-900"
-              }`}
-            >
+            <h3 className="text-xs font-bold leading-tight text-slate-900">
               {title}
             </h3>
-            <p className={`text-[10px] ${isGenz ? "text-indigo-300/80 font-mono" : "text-slate-500"}`}>
-              Grounded Decision Intelligence
+            <p className="text-[10px] text-slate-500">
+              Candidate Profile Analysis
             </p>
           </div>
         </div>
 
         {history.length > 0 && (
           <button
+            type="button"
             onClick={() => clearChatHistory(sessionKey)}
-            className={`p-1.5 rounded-lg text-xs transition-colors ${
-              isGenz
-                ? "text-slate-400 hover:text-slate-200 hover:bg-white/[0.06]"
-                : "text-slate-400 hover:text-slate-600 hover:bg-slate-200/60"
-            }`}
+            className="p-1.5 rounded-lg text-xs transition-colors text-slate-400 hover:text-slate-600 hover:bg-slate-200/60 cursor-pointer"
             title="Clear Chat History"
           >
             <Trash2 className="w-3.5 h-3.5" />
@@ -313,32 +210,18 @@ export default function RecruvoAIChat({
       <div className="flex-1 p-4 overflow-y-auto space-y-3.5 min-h-[260px] max-h-[500px]">
         {history.length === 0 ? (
           <div className="text-center py-6 px-2">
-            <div
-              className={`w-10 h-10 rounded-2xl flex items-center justify-center mx-auto mb-2.5 ${
-                isGenz
-                  ? "bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 shadow-[0_0_20px_-3px_rgba(99,102,241,0.3)]"
-                  : "bg-slate-100 text-slate-800 border border-slate-200"
-              }`}
-            >
-              <Sparkles className="w-5 h-5" />
+            <div className="w-10 h-10 rounded-2xl flex items-center justify-center mx-auto mb-2.5 bg-slate-100 text-slate-800 border border-slate-200">
+              <MessageSquare className="w-5 h-5 text-slate-700" />
             </div>
-            <p
-              className={`text-xs font-bold mb-1 ${
-                isGenz ? "text-slate-100" : "text-slate-800"
-              }`}
-            >
+            <p className="text-xs font-bold mb-1 text-slate-800">
               {comparisonCandidateId
                 ? `Comparing ${candidateName || "Candidate A"} & ${comparisonCandidateName || "Candidate B"}`
                 : candidateId
                 ? `Evaluating ${candidateName || "Candidate"}`
-                : "Recruvo Decision AI"}
+                : "Candidate Inquiry"}
             </p>
-            <p
-              className={`text-[11px] max-w-[240px] mx-auto mb-4 ${
-                isGenz ? "text-slate-400" : "text-slate-500"
-              }`}
-            >
-              Grounded exclusively in the active Job Description and candidate resumes.
+            <p className="text-[11px] max-w-[240px] mx-auto mb-4 text-slate-500">
+              Inquire about technical fit, work history, or targeted interview areas.
             </p>
 
             {/* Initial suggestion pills */}
@@ -346,21 +229,12 @@ export default function RecruvoAIChat({
               {suggestions.map((sug, idx) => (
                 <button
                   key={idx}
+                  type="button"
                   onClick={() => handleSend(sug)}
-                  className={`text-xs text-left px-3 py-2 rounded-xl border transition-all flex items-center justify-between group ${
-                    isGenz
-                      ? "bg-white/[0.03] hover:bg-indigo-600/20 border-white/10 hover:border-indigo-500/40 text-slate-300 hover:text-white"
-                      : "bg-slate-50 hover:bg-slate-100 border-slate-200/80 hover:border-slate-300 text-slate-700"
-                  }`}
+                  className="text-xs text-left px-3 py-2 rounded-xl border transition-all flex items-center justify-between group bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-700 cursor-pointer"
                 >
                   <span className="truncate mr-2">{sug}</span>
-                  <Sparkles
-                    className={`w-3 h-3 shrink-0 transition-colors ${
-                      isGenz
-                        ? "text-indigo-400 group-hover:text-amber-300"
-                        : "text-slate-400 group-hover:text-slate-900"
-                    }`}
-                  />
+                  <ArrowRight className="w-3.5 h-3.5 shrink-0 opacity-40 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all text-slate-900" />
                 </button>
               ))}
             </div>
@@ -372,13 +246,7 @@ export default function RecruvoAIChat({
               className={`flex gap-2.5 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
             >
               {msg.role === "assistant" && (
-                <div
-                  className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${
-                    isGenz
-                      ? "bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-xs"
-                      : "bg-slate-900 text-white"
-                  }`}
-                >
+                <div className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0 mt-0.5 bg-slate-900 text-white">
                   <Bot className="w-3.5 h-3.5" />
                 </div>
               )}
@@ -386,27 +254,17 @@ export default function RecruvoAIChat({
               <div
                 className={`max-w-[88%] rounded-2xl px-3.5 py-2.5 text-xs leading-relaxed ${
                   msg.role === "user"
-                    ? isGenz
-                      ? "bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-br-none shadow-[0_0_15px_-3px_rgba(99,102,241,0.4)]"
-                      : "bg-slate-900 text-white rounded-br-none"
+                    ? "bg-slate-900 text-white rounded-br-none"
                     : msg.isError
                     ? "bg-rose-50 border border-rose-200 text-rose-700 rounded-bl-none"
-                    : isGenz
-                    ? "bg-[#181B2C] text-slate-200 rounded-bl-none border border-white/[0.08]"
-                    : "bg-slate-100 text-slate-800 rounded-bl-none border border-slate-200/60"
+                    : "bg-slate-100 text-slate-800 rounded-bl-none border border-slate-200"
                 }`}
               >
-                <FormattedMessage content={msg.content} isGenz={isGenz} />
+                <FormattedMessage content={msg.content} />
               </div>
 
               {msg.role === "user" && (
-                <div
-                  className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${
-                    isGenz
-                      ? "bg-white/10 text-slate-300 border border-white/10"
-                      : "bg-slate-200 text-slate-700"
-                  }`}
-                >
+                <div className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0 mt-0.5 bg-slate-200 text-slate-700">
                   <User className="w-3.5 h-3.5" />
                 </div>
               )}
@@ -416,43 +274,26 @@ export default function RecruvoAIChat({
 
         {isSending && (
           <div className="flex gap-2.5 justify-start">
-            <div
-              className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${
-                isGenz
-                  ? "bg-indigo-600 text-white"
-                  : "bg-slate-900 text-white"
-              }`}
-            >
+            <div className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0 mt-0.5 bg-slate-900 text-white">
               <Bot className="w-3.5 h-3.5" />
             </div>
-            <div
-              className={`rounded-2xl rounded-bl-none px-3.5 py-2.5 text-xs flex items-center gap-2 border ${
-                isGenz
-                  ? "bg-[#181B2C] border-white/10 text-indigo-300"
-                  : "bg-slate-100 border-slate-200 text-slate-600"
-              }`}
-            >
+            <div className="rounded-2xl rounded-bl-none px-3.5 py-2.5 text-xs flex items-center gap-2 border bg-slate-100 border-slate-200 text-slate-600">
               <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-              <span>Analyzing grounded documents...</span>
+              <span>Analyzing profile data...</span>
             </div>
           </div>
         )}
 
         {errorMessage && (
-          <div
-            className={`p-2.5 rounded-xl border text-xs flex items-center justify-between ${
-              isGenz
-                ? "bg-rose-950/40 border-rose-500/40 text-rose-300"
-                : "bg-rose-50 border-rose-200 text-rose-700"
-            }`}
-          >
+          <div className="p-2.5 rounded-xl border text-xs flex items-center justify-between bg-rose-50 border-rose-200 text-rose-700">
             <div className="flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{errorMessage}</span>
             </div>
             <button
+              type="button"
               onClick={() => handleSend()}
-              className="underline font-bold text-[11px] hover:opacity-80"
+              className="underline font-bold text-[11px] hover:opacity-80 cursor-pointer"
             >
               Retry
             </button>
@@ -464,23 +305,14 @@ export default function RecruvoAIChat({
 
       {/* Quick Action Suggestion Bar when active */}
       {history.length > 0 && (
-        <div
-          className={`px-3 py-1.5 border-t flex gap-1.5 overflow-x-auto no-scrollbar ${
-            isGenz
-              ? "bg-[#141626] border-white/[0.08]"
-              : "bg-slate-50 border-slate-100"
-          }`}
-        >
+        <div className="px-3 py-1.5 border-t flex gap-1.5 overflow-x-auto no-scrollbar bg-slate-50 border-slate-100">
           {suggestions.slice(0, 3).map((sug, idx) => (
             <button
               key={idx}
+              type="button"
               onClick={() => handleSend(sug)}
               disabled={isSending}
-              className={`text-[11px] whitespace-nowrap px-2.5 py-1 rounded-full border transition-colors shrink-0 disabled:opacity-50 ${
-                isGenz
-                  ? "bg-white/[0.04] hover:bg-indigo-600/30 border-white/10 text-slate-300 hover:text-white"
-                  : "bg-white hover:bg-slate-100 border-slate-200 text-slate-700"
-              }`}
+              className="text-[11px] whitespace-nowrap px-2.5 py-1 rounded-full border transition-colors shrink-0 disabled:opacity-50 bg-white hover:bg-slate-100 border-slate-200 text-slate-700 cursor-pointer"
             >
               {sug}
             </button>
@@ -489,41 +321,30 @@ export default function RecruvoAIChat({
       )}
 
       {/* Input Box Footer */}
-      <div
-        className={`p-3 border-t ${
-          isGenz ? "bg-[#0E1018] border-white/[0.08]" : "bg-white border-slate-200"
-        }`}
-      >
+      <div className="p-3 border-t bg-white border-slate-200">
         <div className="relative flex items-center">
           <textarea
             value={inputMessage}
             onChange={(e) => setInputMessage(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Ask Recruvo AI (e.g. Strengths, gap analysis, interview prep)..."
+            placeholder="Ask about candidate strengths, missing skills, interview questions..."
             rows={compact ? 1 : 2}
             disabled={isSending}
-            className={`w-full text-xs rounded-xl pl-3 pr-10 py-2.5 focus:outline-none transition-all resize-none border ${
-              isGenz
-                ? "bg-[#141724] border-white/10 text-slate-100 placeholder-slate-500 focus:border-indigo-500/80 focus:ring-1 focus:ring-indigo-500/50"
-                : "bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 focus:ring-1 focus:ring-slate-900 focus:border-slate-900"
-            }`}
+            className="w-full text-xs rounded-xl pl-3 pr-10 py-2.5 focus:outline-none transition-all resize-none border bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 focus:ring-1 focus:ring-slate-900 focus:border-slate-900"
           />
           <button
+            type="button"
             onClick={() => handleSend()}
             disabled={!inputMessage.trim() || isSending}
-            className={`absolute right-2 bottom-2.5 p-1.5 rounded-lg transition-all disabled:opacity-30 ${
-              isGenz
-                ? "bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:from-indigo-500 hover:to-violet-500 shadow-[0_0_12px_rgba(99,102,241,0.5)]"
-                : "bg-slate-900 text-white hover:bg-black"
-            }`}
+            className="absolute right-2 bottom-2.5 p-1.5 rounded-lg transition-all disabled:opacity-30 bg-slate-900 text-white hover:bg-black cursor-pointer"
             title="Send (Enter)"
           >
             <Send className="w-3.5 h-3.5" />
           </button>
         </div>
-        <div className="flex items-center justify-between text-[10px] opacity-50 mt-1 px-1">
+        <div className="flex items-center justify-between text-[10px] text-slate-400 mt-1 px-1">
           <span>Enter to send • Shift+Enter for newline</span>
-          <span>100% Grounded</span>
+          <span>Role Alignment</span>
         </div>
       </div>
     </div>
