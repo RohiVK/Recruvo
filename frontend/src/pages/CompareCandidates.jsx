@@ -89,14 +89,8 @@ export default function CompareCandidates() {
         </div>
 
         {activeJob && (
-          <div
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full border text-xs font-semibold ${
-              isGenz
-                ? "bg-indigo-500/10 border-indigo-500/30 text-indigo-300"
-                : "bg-slate-50 border-slate-200 text-slate-800"
-            }`}
-          >
-            <Briefcase className="w-3.5 h-3.5 opacity-60" />
+          <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full border text-xs font-semibold bg-[#E8F5E9] border-[#C8E6C9] text-[#2E7D32]">
+            <Briefcase className="w-3.5 h-3.5 text-[#4CAF4F]" />
             <span>Target: {activeJob.job_description?.title || "Active Job"}</span>
           </div>
         )}
@@ -108,21 +102,13 @@ export default function CompareCandidates() {
           <div className="flex-1 w-full grid grid-cols-1 sm:grid-cols-11 items-center gap-3">
             {/* Candidate A Selector */}
             <div className="sm:col-span-5">
-              <label
-                className={`block text-[10.5px] font-bold uppercase tracking-wider mb-1.5 ${
-                  isGenz ? "text-indigo-400" : "text-slate-500"
-                }`}
-              >
+              <label className="block text-[10.5px] font-bold uppercase tracking-wider mb-1.5 text-[#4D5E80]">
                 Candidate A
               </label>
               <select
                 value={candidateAId}
                 onChange={(e) => setCandidateAId(e.target.value)}
-                className={`w-full rounded-xl px-3.5 py-2.5 text-xs font-bold focus:outline-none transition-all border ${
-                  isGenz
-                    ? "bg-[#141724] border-white/10 text-slate-100 focus:border-indigo-500/80"
-                    : "bg-slate-50 border-slate-200 text-slate-900 focus:border-slate-900"
-                }`}
+                className="w-full rounded-md px-3.5 py-2.5 text-xs font-bold focus:outline-none transition-all border bg-white border-[#CFD8DC] text-[#263238] focus:border-[#4CAF4F] focus:ring-1 focus:ring-[#4CAF4F]"
               >
                 {candidates.map((c) => (
                   <option key={c.id} value={c.id}>
@@ -134,34 +120,20 @@ export default function CompareCandidates() {
 
             {/* VS Badge */}
             <div className="sm:col-span-1 text-center flex justify-center">
-              <span
-                className={`w-7 h-7 rounded-full flex items-center justify-center font-black text-xs ${
-                  isGenz
-                    ? "bg-indigo-600/30 text-indigo-300 border border-indigo-500/40"
-                    : "bg-slate-100 text-slate-600"
-                }`}
-              >
+              <span className="w-7 h-7 rounded-full flex items-center justify-center font-black text-xs bg-[#E8F5E9] text-[#2E7D32] border border-[#C8E6C9]">
                 VS
               </span>
             </div>
 
             {/* Candidate B Selector */}
             <div className="sm:col-span-5">
-              <label
-                className={`block text-[10.5px] font-bold uppercase tracking-wider mb-1.5 ${
-                  isGenz ? "text-purple-400" : "text-slate-500"
-                }`}
-              >
+              <label className="block text-[10.5px] font-bold uppercase tracking-wider mb-1.5 text-[#4D5E80]">
                 Candidate B
               </label>
               <select
                 value={candidateBId}
                 onChange={(e) => setCandidateBId(e.target.value)}
-                className={`w-full rounded-xl px-3.5 py-2.5 text-xs font-bold focus:outline-none transition-all border ${
-                  isGenz
-                    ? "bg-[#141724] border-white/10 text-slate-100 focus:border-indigo-500/80"
-                    : "bg-slate-50 border-slate-200 text-slate-900 focus:border-slate-900"
-                }`}
+                className="w-full rounded-md px-3.5 py-2.5 text-xs font-bold focus:outline-none transition-all border bg-white border-[#CFD8DC] text-[#263238] focus:border-[#4CAF4F] focus:ring-1 focus:ring-[#4CAF4F]"
               >
                 {candidates.map((c) => (
                   <option key={c.id} value={c.id}>
@@ -184,13 +156,9 @@ export default function CompareCandidates() {
                   job: activeJob,
                 })
               }
-              className={`inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold border transition-all shrink-0 self-end md:self-center ${
-                isGenz
-                  ? "bg-white/[0.04] border-white/10 text-slate-200 hover:bg-white/10"
-                  : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50 shadow-2xs"
-              }`}
+              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-md text-xs font-bold border transition-all shrink-0 self-end md:self-center bg-white border-[#CFD8DC] text-[#263238] hover:bg-[#F5F7FA] shadow-xs cursor-pointer"
             >
-              <Download className="w-3.5 h-3.5 text-indigo-400" />
+              <Download className="w-3.5 h-3.5 text-[#4CAF4F]" />
               <span>Comparison PDF</span>
             </button>
           )}
@@ -233,69 +201,47 @@ export default function CompareCandidates() {
                         isGenz ? "border-white/[0.06] bg-white/[0.01]" : "border-slate-200 bg-slate-50/40"
                       }`}
                     >
-                      <th className="py-3 px-4 w-36 uppercase text-[10.5px] opacity-60">Pillar</th>
-                      <th className="py-3 px-4 text-sm font-bold text-indigo-400">{nameA}</th>
-                      <th className="py-3 px-4 text-sm font-bold text-purple-400">{nameB}</th>
+                      <th className="py-3 px-4 w-36 uppercase text-[10.5px] text-[#717171]">Pillar</th>
+                      <th className="py-3 px-4 text-sm font-bold text-[#4CAF4F]">{nameA}</th>
+                      <th className="py-3 px-4 text-sm font-bold text-[#2E7D32]">{nameB}</th>
                     </tr>
                   </thead>
-                  <tbody
-                    className={`divide-y text-xs ${
-                      isGenz ? "divide-white/[0.04] text-slate-200" : "divide-slate-100 text-slate-800"
-                    }`}
-                  >
+                  <tbody className="divide-y divide-[#ECEFF1] text-xs text-[#263238]">
                     {/* Overall Match */}
-                    <tr className={isGenz ? "hover:bg-white/[0.02]" : "hover:bg-slate-50/60"}>
+                    <tr className="hover:bg-[#F5F7FA]">
                       <td className="py-3.5 px-4 font-bold opacity-80">Overall Fit</td>
                       <td className="py-3.5 px-4">
                         <div className="flex items-center gap-3">
-                          <div
-                            className={`flex-1 rounded-full h-2.5 overflow-hidden ${
-                              isGenz ? "bg-white/10" : "bg-slate-100"
-                            }`}
-                          >
+                          <div className="flex-1 rounded-full h-2.5 overflow-hidden bg-[#ECEFF1]">
                             <div
-                              className={`h-full rounded-full transition-all duration-700 ${
-                                isGenz ? "bg-gradient-to-r from-indigo-500 to-indigo-400" : "bg-slate-900"
-                              }`}
+                              className="h-full rounded-full transition-all duration-700 bg-[#4CAF4F]"
                               style={{ width: `${scoreA}%` }}
                             />
                           </div>
-                          <span className="font-bold font-mono w-9 text-right">{scoreA}%</span>
+                          <span className="font-bold font-mono w-9 text-right text-[#4CAF4F]">{scoreA}%</span>
                         </div>
                       </td>
                       <td className="py-3.5 px-4">
                         <div className="flex items-center gap-3">
-                          <div
-                            className={`flex-1 rounded-full h-2.5 overflow-hidden ${
-                              isGenz ? "bg-white/10" : "bg-slate-100"
-                            }`}
-                          >
+                          <div className="flex-1 rounded-full h-2.5 overflow-hidden bg-[#ECEFF1]">
                             <div
-                              className={`h-full rounded-full transition-all duration-700 ${
-                                isGenz ? "bg-gradient-to-r from-purple-500 to-purple-400" : "bg-slate-900"
-                              }`}
+                              className="h-full rounded-full transition-all duration-700 bg-[#2E7D32]"
                               style={{ width: `${scoreB}%` }}
                             />
                           </div>
-                          <span className="font-bold font-mono w-9 text-right">{scoreB}%</span>
+                          <span className="font-bold font-mono w-9 text-right text-[#2E7D32]">{scoreB}%</span>
                         </div>
                       </td>
                     </tr>
 
                     {/* Technical Score */}
-                    <tr className={isGenz ? "hover:bg-white/[0.02]" : "hover:bg-slate-50/60"}>
+                    <tr className="hover:bg-[#F5F7FA]">
                       <td className="py-3.5 px-4 font-bold opacity-80">Technical Skills</td>
                       <td className="py-3.5 px-4">
                         <div className="flex items-center gap-3">
-                          <div
-                            className={`flex-1 rounded-full h-2.5 overflow-hidden ${
-                              isGenz ? "bg-white/10" : "bg-slate-100"
-                            }`}
-                          >
+                          <div className="flex-1 rounded-full h-2.5 overflow-hidden bg-[#ECEFF1]">
                             <div
-                              className={`h-full rounded-full ${
-                                isGenz ? "bg-indigo-500" : "bg-slate-700"
-                              }`}
+                              className="h-full rounded-full bg-[#4CAF4F]"
                               style={{ width: `${techA}%` }}
                             />
                           </div>
@@ -304,15 +250,9 @@ export default function CompareCandidates() {
                       </td>
                       <td className="py-3.5 px-4">
                         <div className="flex items-center gap-3">
-                          <div
-                            className={`flex-1 rounded-full h-2.5 overflow-hidden ${
-                              isGenz ? "bg-white/10" : "bg-slate-100"
-                            }`}
-                          >
+                          <div className="flex-1 rounded-full h-2.5 overflow-hidden bg-[#ECEFF1]">
                             <div
-                              className={`h-full rounded-full ${
-                                isGenz ? "bg-purple-500" : "bg-slate-700"
-                              }`}
+                              className="h-full rounded-full bg-[#2E7D32]"
                               style={{ width: `${techB}%` }}
                             />
                           </div>
@@ -322,19 +262,13 @@ export default function CompareCandidates() {
                     </tr>
 
                     {/* Experience Score */}
-                    <tr className={isGenz ? "hover:bg-white/[0.02]" : "hover:bg-slate-50/60"}>
+                    <tr className="hover:bg-[#F5F7FA]">
                       <td className="py-3.5 px-4 font-bold opacity-80">Experience Seniority</td>
                       <td className="py-3.5 px-4">
                         <div className="flex items-center gap-3">
-                          <div
-                            className={`flex-1 rounded-full h-2.5 overflow-hidden ${
-                              isGenz ? "bg-white/10" : "bg-slate-100"
-                            }`}
-                          >
+                          <div className="flex-1 rounded-full h-2.5 overflow-hidden bg-[#ECEFF1]">
                             <div
-                              className={`h-full rounded-full ${
-                                isGenz ? "bg-indigo-500" : "bg-slate-700"
-                              }`}
+                              className="h-full rounded-full bg-[#4CAF4F]"
                               style={{ width: `${expA}%` }}
                             />
                           </div>
@@ -343,15 +277,9 @@ export default function CompareCandidates() {
                       </td>
                       <td className="py-3.5 px-4">
                         <div className="flex items-center gap-3">
-                          <div
-                            className={`flex-1 rounded-full h-2.5 overflow-hidden ${
-                              isGenz ? "bg-white/10" : "bg-slate-100"
-                            }`}
-                          >
+                          <div className="flex-1 rounded-full h-2.5 overflow-hidden bg-[#ECEFF1]">
                             <div
-                              className={`h-full rounded-full ${
-                                isGenz ? "bg-purple-500" : "bg-slate-700"
-                              }`}
+                              className="h-full rounded-full bg-[#2E7D32]"
                               style={{ width: `${expB}%` }}
                             />
                           </div>

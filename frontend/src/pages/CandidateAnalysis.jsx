@@ -155,11 +155,7 @@ export default function CandidateAnalysis() {
 
           <NavLink
             to="/compare"
-            className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-              isGenz
-                ? "bg-white/[0.05] border border-white/10 text-slate-200 hover:bg-white/10"
-                : "bg-slate-900 text-white hover:bg-black"
-            }`}
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-xs font-bold transition-all bg-[#4CAF4F] text-white hover:bg-[#43A047] shadow-xs"
           >
             <Users className="w-3.5 h-3.5" />
             <span>Compare Candidate</span>
@@ -179,45 +175,35 @@ export default function CandidateAnalysis() {
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           {/* Identity Info */}
           <div className="flex items-start gap-4">
-            <div
-              className={`w-14 h-14 rounded-2xl flex items-center justify-center font-black text-xl shrink-0 border ${
-                isGenz
-                  ? "bg-gradient-to-br from-indigo-500 to-violet-600 text-white border-indigo-400/40 shadow-[0_0_20px_-3px_rgba(99,102,241,0.6)]"
-                  : "bg-slate-900 text-white border-slate-800"
-              }`}
-            >
+            <div className="w-14 h-14 rounded-xl flex items-center justify-center font-black text-xl shrink-0 bg-[#4CAF4F] text-white shadow-xs">
               {name.charAt(0)}
             </div>
 
             <div className="space-y-1">
               <div className="flex flex-wrap items-center gap-2">
-                <h1 className="text-xl md:text-2xl font-extrabold tracking-tight">{name}</h1>
-                <span
-                  className={`text-xs font-mono px-2 py-0.5 rounded-full border ${
-                    isGenz ? "bg-white/[0.05] border-white/10 text-indigo-300" : "bg-slate-100 border-slate-200 text-slate-700"
-                  }`}
-                >
+                <h1 className="text-xl md:text-2xl font-extrabold tracking-tight text-[#263238]">{name}</h1>
+                <span className="text-xs font-mono px-2 py-0.5 rounded-full border bg-[#E8F5E9] border-[#C8E6C9] text-[#2E7D32]">
                   ID #{id}
                 </span>
               </div>
 
-              <p className={`text-xs md:text-sm font-semibold ${isGenz ? "text-indigo-300" : "text-slate-600"}`}>
+              <p className="text-xs md:text-sm font-semibold text-[#4D5E80]">
                 {role}
               </p>
 
-              <div className="flex flex-wrap items-center gap-3 pt-2 text-xs opacity-70">
+              <div className="flex flex-wrap items-center gap-3 pt-2 text-xs text-[#717171]">
                 <span className="flex items-center gap-1">
-                  <Mail className="w-3.5 h-3.5" />
+                  <Mail className="w-3.5 h-3.5 text-[#4CAF4F]" />
                   {email}
                 </span>
                 <span>•</span>
                 <span className="flex items-center gap-1">
-                  <Phone className="w-3.5 h-3.5" />
+                  <Phone className="w-3.5 h-3.5 text-[#4CAF4F]" />
                   {phone}
                 </span>
                 <span>•</span>
                 <span className="flex items-center gap-1">
-                  <MapPin className="w-3.5 h-3.5" />
+                  <MapPin className="w-3.5 h-3.5 text-[#4CAF4F]" />
                   {location}
                 </span>
               </div>
@@ -232,15 +218,15 @@ export default function CandidateAnalysis() {
                   <span
                     className={`text-3xl font-black font-mono leading-none block ${
                       scorePct >= 80
-                        ? "text-emerald-400"
+                        ? "text-[#2E7D32]"
                         : scorePct >= 60
-                        ? "text-indigo-400"
-                        : "text-amber-400"
+                        ? "text-[#4CAF4F]"
+                        : "text-amber-500"
                     }`}
                   >
                     {scorePct}%
                   </span>
-                  <span className="text-[11px] font-bold uppercase tracking-wider opacity-60">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-[#717171]">
                     Overall Fit Score
                   </span>
                 </div>
@@ -251,7 +237,7 @@ export default function CandidateAnalysis() {
                 type="button"
                 onClick={handleEvaluate}
                 disabled={isEvaluating}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold text-white shadow-xs bg-slate-900 hover:bg-black transition-all cursor-pointer"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-md text-xs font-bold text-white shadow-xs bg-[#4CAF4F] hover:bg-[#43A047] transition-all cursor-pointer"
               >
                 {isEvaluating ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Award className="w-4 h-4" />}
                 <span>Run Candidate Evaluation</span>
@@ -315,23 +301,15 @@ export default function CandidateAnalysis() {
         {/* Left Side: 5-Tab Deep Dive Container */}
         <div className="lg:col-span-7 xl:col-span-8 space-y-4">
           {/* Tabs Navigation */}
-          <div
-            className={`flex items-center gap-1.5 p-1 rounded-2xl border overflow-x-auto no-scrollbar ${
-              isGenz ? "bg-[#111322] border-white/10" : "bg-slate-100 border-slate-200"
-            }`}
-          >
+          <div className="flex items-center gap-1.5 p-1 rounded-xl border overflow-x-auto no-scrollbar bg-white border-[#ECEFF1]">
             {tabs.map((tab) => (
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
-                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+                className={`px-3.5 py-2 rounded-lg text-xs font-semibold transition-all whitespace-nowrap cursor-pointer ${
                   activeTab === tab.key
-                    ? isGenz
-                      ? "bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-xs"
-                      : "bg-white text-slate-900 shadow-2xs"
-                    : isGenz
-                    ? "text-slate-400 hover:text-white"
-                    : "text-slate-600 hover:text-slate-900"
+                    ? "bg-[#4CAF4F] text-white shadow-xs font-bold"
+                    : "text-[#717171] hover:text-[#263238] hover:bg-[#E8F5E9]/50"
                 }`}
               >
                 {tab.label}
@@ -607,7 +585,7 @@ export default function CandidateAnalysis() {
                         key={idx}
                         className="p-4 rounded-xl border flex items-start gap-3 text-xs leading-relaxed bg-slate-50 border-slate-200"
                       >
-                        <span className="w-5 h-5 rounded-lg flex items-center justify-center font-bold text-[10.5px] shrink-0 mt-0.5 bg-slate-900 text-white">
+                        <span className="w-5 h-5 rounded-md flex items-center justify-center font-bold text-[10.5px] shrink-0 mt-0.5 bg-[#4CAF4F] text-white">
                           {idx + 1}
                         </span>
                         <span className="font-medium text-slate-800">{q}</span>

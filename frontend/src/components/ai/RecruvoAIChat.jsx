@@ -177,18 +177,18 @@ export default function RecruvoAIChat({
   };
 
   return (
-    <div className="flex flex-col h-full rounded-2xl border overflow-hidden bg-white border-slate-200 shadow-xs">
+    <div className="flex flex-col h-full rounded-xl border overflow-hidden bg-white border-[#ECEFF1] shadow-xs">
       {/* Header */}
-      <div className="px-4 py-3.5 border-b flex items-center justify-between bg-slate-50 border-slate-200">
+      <div className="px-4 py-3.5 border-b flex items-center justify-between bg-[#F5F7FA] border-[#ECEFF1]">
         <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-xl flex items-center justify-center font-bold bg-slate-900 text-white shadow-xs">
+          <div className="w-7 h-7 rounded-lg flex items-center justify-center font-bold bg-[#4CAF4F] text-white shadow-xs">
             <MessageSquare className="w-4 h-4" />
           </div>
           <div>
-            <h3 className="text-xs font-bold leading-tight text-slate-900">
+            <h3 className="text-xs font-bold leading-tight text-[#263238]">
               {title}
             </h3>
-            <p className="text-[10px] text-slate-500">
+            <p className="text-[10px] text-[#717171]">
               Candidate Profile Analysis
             </p>
           </div>
@@ -198,7 +198,7 @@ export default function RecruvoAIChat({
           <button
             type="button"
             onClick={() => clearChatHistory(sessionKey)}
-            className="p-1.5 rounded-lg text-xs transition-colors text-slate-400 hover:text-slate-600 hover:bg-slate-200/60 cursor-pointer"
+            className="p-1.5 rounded-lg text-xs transition-colors text-[#717171] hover:text-[#C62828] hover:bg-[#FFEBEE] cursor-pointer"
             title="Clear Chat History"
           >
             <Trash2 className="w-3.5 h-3.5" />
@@ -210,17 +210,17 @@ export default function RecruvoAIChat({
       <div className="flex-1 p-4 overflow-y-auto space-y-3.5 min-h-[260px] max-h-[500px]">
         {history.length === 0 ? (
           <div className="text-center py-6 px-2">
-            <div className="w-10 h-10 rounded-2xl flex items-center justify-center mx-auto mb-2.5 bg-slate-100 text-slate-800 border border-slate-200">
-              <MessageSquare className="w-5 h-5 text-slate-700" />
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center mx-auto mb-2.5 bg-[#E8F5E9] text-[#2E7D32] border border-[#C8E6C9]">
+              <MessageSquare className="w-5 h-5 text-[#4CAF4F]" />
             </div>
-            <p className="text-xs font-bold mb-1 text-slate-800">
+            <p className="text-xs font-bold mb-1 text-[#263238]">
               {comparisonCandidateId
                 ? `Comparing ${candidateName || "Candidate A"} & ${comparisonCandidateName || "Candidate B"}`
                 : candidateId
                 ? `Evaluating ${candidateName || "Candidate"}`
                 : "Candidate Inquiry"}
             </p>
-            <p className="text-[11px] max-w-[240px] mx-auto mb-4 text-slate-500">
+            <p className="text-[11px] max-w-[240px] mx-auto mb-4 text-[#717171]">
               Inquire about technical fit, work history, or targeted interview areas.
             </p>
 
@@ -231,10 +231,10 @@ export default function RecruvoAIChat({
                   key={idx}
                   type="button"
                   onClick={() => handleSend(sug)}
-                  className="text-xs text-left px-3 py-2 rounded-xl border transition-all flex items-center justify-between group bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-700 cursor-pointer"
+                  className="text-xs text-left px-3 py-2 rounded-lg border transition-all flex items-center justify-between group bg-[#F5F7FA] hover:bg-[#E8F5E9] border-[#ECEFF1] hover:border-[#C8E6C9] text-[#4D5E80] hover:text-[#2E7D32] cursor-pointer"
                 >
                   <span className="truncate mr-2">{sug}</span>
-                  <ArrowRight className="w-3.5 h-3.5 shrink-0 opacity-40 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all text-slate-900" />
+                  <ArrowRight className="w-3.5 h-3.5 shrink-0 opacity-40 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all text-[#4CAF4F]" />
                 </button>
               ))}
             </div>
@@ -246,25 +246,25 @@ export default function RecruvoAIChat({
               className={`flex gap-2.5 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
             >
               {msg.role === "assistant" && (
-                <div className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0 mt-0.5 bg-slate-900 text-white">
+                <div className="w-6 h-6 rounded-md flex items-center justify-center shrink-0 mt-0.5 bg-[#263238] text-white">
                   <Bot className="w-3.5 h-3.5" />
                 </div>
               )}
 
               <div
-                className={`max-w-[88%] rounded-2xl px-3.5 py-2.5 text-xs leading-relaxed ${
+                className={`max-w-[88%] rounded-xl px-3.5 py-2.5 text-xs leading-relaxed ${
                   msg.role === "user"
-                    ? "bg-slate-900 text-white rounded-br-none"
+                    ? "bg-[#4CAF4F] text-white rounded-br-none"
                     : msg.isError
-                    ? "bg-rose-50 border border-rose-200 text-rose-700 rounded-bl-none"
-                    : "bg-slate-100 text-slate-800 rounded-bl-none border border-slate-200"
+                    ? "bg-[#FFEBEE] border border-[#FFCDD2] text-[#C62828] rounded-bl-none"
+                    : "bg-[#F5F7FA] text-[#263238] rounded-bl-none border border-[#ECEFF1]"
                 }`}
               >
                 <FormattedMessage content={msg.content} />
               </div>
 
               {msg.role === "user" && (
-                <div className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0 mt-0.5 bg-slate-200 text-slate-700">
+                <div className="w-6 h-6 rounded-md flex items-center justify-center shrink-0 mt-0.5 bg-[#E8F5E9] text-[#2E7D32]">
                   <User className="w-3.5 h-3.5" />
                 </div>
               )}
@@ -274,18 +274,18 @@ export default function RecruvoAIChat({
 
         {isSending && (
           <div className="flex gap-2.5 justify-start">
-            <div className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0 mt-0.5 bg-slate-900 text-white">
+            <div className="w-6 h-6 rounded-md flex items-center justify-center shrink-0 mt-0.5 bg-[#263238] text-white">
               <Bot className="w-3.5 h-3.5" />
             </div>
-            <div className="rounded-2xl rounded-bl-none px-3.5 py-2.5 text-xs flex items-center gap-2 border bg-slate-100 border-slate-200 text-slate-600">
-              <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+            <div className="rounded-xl rounded-bl-none px-3.5 py-2.5 text-xs flex items-center gap-2 border bg-[#F5F7FA] border-[#ECEFF1] text-[#717171]">
+              <RefreshCw className="w-3.5 h-3.5 animate-spin text-[#4CAF4F]" />
               <span>Analyzing profile data...</span>
             </div>
           </div>
         )}
 
         {errorMessage && (
-          <div className="p-2.5 rounded-xl border text-xs flex items-center justify-between bg-rose-50 border-rose-200 text-rose-700">
+          <div className="p-2.5 rounded-lg border text-xs flex items-center justify-between bg-[#FFEBEE] border-[#FFCDD2] text-[#C62828]">
             <div className="flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{errorMessage}</span>
@@ -305,14 +305,14 @@ export default function RecruvoAIChat({
 
       {/* Quick Action Suggestion Bar when active */}
       {history.length > 0 && (
-        <div className="px-3 py-1.5 border-t flex gap-1.5 overflow-x-auto no-scrollbar bg-slate-50 border-slate-100">
+        <div className="px-3 py-1.5 border-t flex gap-1.5 overflow-x-auto no-scrollbar bg-[#F5F7FA] border-[#ECEFF1]">
           {suggestions.slice(0, 3).map((sug, idx) => (
             <button
               key={idx}
               type="button"
               onClick={() => handleSend(sug)}
               disabled={isSending}
-              className="text-[11px] whitespace-nowrap px-2.5 py-1 rounded-full border transition-colors shrink-0 disabled:opacity-50 bg-white hover:bg-slate-100 border-slate-200 text-slate-700 cursor-pointer"
+              className="text-[11px] whitespace-nowrap px-2.5 py-1 rounded-full border transition-colors shrink-0 disabled:opacity-50 bg-white hover:bg-[#E8F5E9] border-[#ECEFF1] hover:border-[#C8E6C9] text-[#4D5E80] hover:text-[#2E7D32] cursor-pointer"
             >
               {sug}
             </button>
@@ -321,7 +321,7 @@ export default function RecruvoAIChat({
       )}
 
       {/* Input Box Footer */}
-      <div className="p-3 border-t bg-white border-slate-200">
+      <div className="p-3 border-t bg-white border-[#ECEFF1]">
         <div className="relative flex items-center">
           <textarea
             value={inputMessage}
@@ -330,19 +330,19 @@ export default function RecruvoAIChat({
             placeholder="Ask about candidate strengths, missing skills, interview questions..."
             rows={compact ? 1 : 2}
             disabled={isSending}
-            className="w-full text-xs rounded-xl pl-3 pr-10 py-2.5 focus:outline-none transition-all resize-none border bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 focus:ring-1 focus:ring-slate-900 focus:border-slate-900"
+            className="w-full text-xs rounded-lg pl-3 pr-10 py-2.5 focus:outline-none transition-all resize-none border bg-[#F5F7FA] border-[#CFD8DC] text-[#263238] placeholder-[#90A4AE] focus:ring-1 focus:ring-[#4CAF4F] focus:border-[#4CAF4F]"
           />
           <button
             type="button"
             onClick={() => handleSend()}
             disabled={!inputMessage.trim() || isSending}
-            className="absolute right-2 bottom-2.5 p-1.5 rounded-lg transition-all disabled:opacity-30 bg-slate-900 text-white hover:bg-black cursor-pointer"
+            className="absolute right-2 bottom-2.5 p-1.5 rounded-md transition-all disabled:opacity-30 bg-[#4CAF4F] text-white hover:bg-[#43A047] cursor-pointer"
             title="Send (Enter)"
           >
             <Send className="w-3.5 h-3.5" />
           </button>
         </div>
-        <div className="flex items-center justify-between text-[10px] text-slate-400 mt-1 px-1">
+        <div className="flex items-center justify-between text-[10px] text-[#717171] mt-1 px-1">
           <span>Enter to send • Shift+Enter for newline</span>
           <span>Role Alignment</span>
         </div>

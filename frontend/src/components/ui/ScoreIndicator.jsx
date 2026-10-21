@@ -9,37 +9,37 @@ export default function ScoreIndicator({
 }) {
   const numScore = Math.max(0, Math.min(100, Math.round(score)));
 
-  // Color mapping
+  // Color mapping matching Nexcent Green theme
   const getColor = (val) => {
     if (val >= 80) {
       return {
-        text: "text-emerald-700",
-        bg: "bg-emerald-50",
-        border: "border-emerald-200",
-        stroke: "#059669",
+        text: "text-[#2E7D32]",
+        bg: "bg-[#E8F5E9]",
+        border: "border-[#C8E6C9]",
+        stroke: "#4CAF4F",
       };
     }
     if (val >= 60) {
       return {
-        text: "text-indigo-700",
-        bg: "bg-indigo-50",
-        border: "border-indigo-200",
-        stroke: "#4F46E5",
+        text: "text-[#388E3C]",
+        bg: "bg-[#E8F5E9]",
+        border: "border-[#C8E6C9]",
+        stroke: "#66BB6A",
       };
     }
     if (val >= 40) {
       return {
-        text: "text-amber-700",
-        bg: "bg-amber-50",
-        border: "border-amber-200",
-        stroke: "#D97706",
+        text: "text-[#E65100]",
+        bg: "bg-[#FFF3E0]",
+        border: "border-[#FFE0B2]",
+        stroke: "#FFA726",
       };
     }
     return {
-      text: "text-rose-700",
-      bg: "bg-rose-50",
-      border: "border-rose-200",
-      stroke: "#E11D48",
+      text: "text-[#C62828]",
+      bg: "bg-[#FFEBEE]",
+      border: "border-[#FFCDD2]",
+      stroke: "#EF5350",
     };
   };
 
@@ -51,13 +51,13 @@ export default function ScoreIndicator({
       <div className="space-y-1.5 w-full">
         {label && (
           <div className="flex items-center justify-between text-xs">
-            <span className="text-slate-600">{label}</span>
+            <span className="text-[#4D5E80] font-medium">{label}</span>
             <span className={`font-bold ${colors.text}`}>{numScore}%</span>
           </div>
         )}
-        <div className="h-2 rounded-full overflow-hidden bg-slate-100">
+        <div className="h-2 rounded-full overflow-hidden bg-[#ECEFF1]">
           <div
-            className="h-full rounded-full transition-all duration-500 ease-out bg-slate-900"
+            className="h-full rounded-full transition-all duration-500 ease-out bg-[#4CAF4F]"
             style={{ width: `${numScore}%` }}
           />
         </div>
@@ -81,7 +81,7 @@ export default function ScoreIndicator({
             cx={svgSize / 2}
             cy={svgSize / 2}
             r={radius}
-            stroke="#E2E8F0"
+            stroke="#ECEFF1"
             strokeWidth={strokeWidth}
             fill="transparent"
           />
@@ -114,7 +114,7 @@ export default function ScoreIndicator({
             {numScore}%
           </span>
           {size === "xl" && (
-            <span className="text-[10px] font-bold uppercase tracking-widest mt-1 text-slate-500">
+            <span className="text-[10px] font-bold uppercase tracking-widest mt-1 text-[#717171]">
               {numScore >= 80 ? "Top Match" : numScore >= 60 ? "Strong Fit" : "Partial"}
             </span>
           )}
@@ -122,7 +122,7 @@ export default function ScoreIndicator({
       </div>
 
       {label && size !== "sm" && (
-        <span className="mt-2 text-xs font-semibold text-center text-slate-700">
+        <span className="mt-2 text-xs font-semibold text-center text-[#263238]">
           {label}
         </span>
       )}

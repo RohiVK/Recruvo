@@ -118,7 +118,7 @@ export default function Settings() {
       {/* Settings Card Container */}
       <BentoCard className="overflow-hidden border border-slate-200/80 bg-white">
         {/* Navigation Tabs Bar */}
-        <div className="flex border-b p-1.5 gap-1 overflow-x-auto no-scrollbar bg-slate-50/80 border-slate-200">
+        <div className="flex border-b p-1.5 gap-1 overflow-x-auto no-scrollbar bg-slate-50/80 border-[#ECEFF1]">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.key;
@@ -126,10 +126,10 @@ export default function Settings() {
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
-                className={`flex-1 py-2 px-3 text-xs font-bold rounded-xl flex items-center justify-center gap-2 transition-all whitespace-nowrap ${
+                className={`flex-1 py-2 px-3 text-xs font-bold rounded-lg flex items-center justify-center gap-2 transition-all whitespace-nowrap cursor-pointer ${
                   isActive
-                    ? "bg-white text-slate-900 shadow-sm border border-slate-200"
-                    : "text-slate-500 hover:text-slate-900"
+                    ? "bg-[#4CAF4F] text-white shadow-xs font-bold"
+                    : "text-[#717171] hover:text-[#263238] hover:bg-[#E8F5E9]/50"
                 }`}
               >
                 <Icon className="w-3.5 h-3.5" />
@@ -181,12 +181,12 @@ export default function Settings() {
                     value={apiKeyInput}
                     onChange={(e) => setApiKeyInput(e.target.value)}
                     placeholder="Enter GEMINI_API_KEY (e.g. AIzaSy...)"
-                    className="flex-1 text-xs rounded-xl px-3.5 py-2.5 focus:outline-none border bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:border-slate-900 focus:ring-1 focus:ring-slate-900"
+                    className="flex-1 text-xs rounded-md px-3.5 py-2.5 focus:outline-none border bg-white border-[#CFD8DC] text-[#263238] placeholder-[#90A4AE] focus:border-[#4CAF4F] focus:ring-1 focus:ring-[#4CAF4F]"
                   />
                   <button
                     type="submit"
                     disabled={!apiKeyInput.trim() || isSavingKey}
-                    className="px-4 py-2.5 rounded-xl text-xs font-bold text-white transition-all disabled:opacity-40 shrink-0 bg-slate-900 hover:bg-slate-800"
+                    className="px-4 py-2.5 rounded-md text-xs font-bold text-white transition-all disabled:opacity-40 shrink-0 bg-[#4CAF4F] hover:bg-[#43A047] cursor-pointer"
                   >
                     {isSavingKey ? "Verifying..." : "Save & Verify Key"}
                   </button>
@@ -272,7 +272,7 @@ export default function Settings() {
               <div className="pt-2">
                 <button
                   onClick={handleSavePreferences}
-                  className="px-5 py-2.5 rounded-xl text-xs font-bold text-white transition-all bg-slate-900 hover:bg-slate-800"
+                  className="px-5 py-2.5 rounded-md text-xs font-bold text-white transition-all bg-[#4CAF4F] hover:bg-[#43A047] cursor-pointer"
                 >
                   Save Changes
                 </button>
@@ -285,10 +285,10 @@ export default function Settings() {
             <div className="space-y-6 animate-fadeIn">
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label className="text-sm font-bold text-slate-900">
+                  <label className="text-sm font-bold text-[#263238]">
                     High Match Threshold ({minMatchThreshold}%)
                   </label>
-                  <span className="text-xs font-mono font-bold text-slate-700">
+                  <span className="text-xs font-mono font-bold text-[#2E7D32]">
                     {minMatchThreshold}%
                   </span>
                 </div>
@@ -299,17 +299,17 @@ export default function Settings() {
                   step="5"
                   value={minMatchThreshold}
                   onChange={(e) => setMinMatchThreshold(Number(e.target.value))}
-                  className="w-full accent-slate-900 cursor-pointer"
+                  className="w-full accent-[#4CAF4F] cursor-pointer"
                 />
-                <p className="text-xs mt-1 text-slate-500">
+                <p className="text-xs mt-1 text-[#717171]">
                   Candidates meeting or exceeding this match percentage will receive prioritized high-tier badges.
                 </p>
               </div>
 
               <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
                 <div>
-                  <h3 className="text-sm font-bold text-slate-900">Strict Non-Hallucination Guardrails</h3>
-                  <p className="text-xs mt-0.5 max-w-lg text-slate-500">
+                  <h3 className="text-sm font-bold text-[#263238]">Strict Non-Hallucination Guardrails</h3>
+                  <p className="text-xs mt-0.5 max-w-lg text-[#717171]">
                     Constrain candidate evaluations strictly to verified statements found inside uploaded resumes and JD text.
                   </p>
                 </div>
@@ -317,14 +317,14 @@ export default function Settings() {
                   type="checkbox"
                   checked={enableStrictEvaluation}
                   onChange={(e) => setEnableStrictEvaluation(e.target.checked)}
-                  className="w-4 h-4 accent-slate-900 rounded cursor-pointer"
+                  className="w-4 h-4 accent-[#4CAF4F] rounded cursor-pointer"
                 />
               </div>
 
               <div className="pt-2">
                 <button
                   onClick={handleSavePreferences}
-                  className="px-5 py-2.5 rounded-xl text-xs font-bold text-white transition-all bg-slate-900 hover:bg-slate-800"
+                  className="px-5 py-2.5 rounded-md text-xs font-bold text-white transition-all bg-[#4CAF4F] hover:bg-[#43A047] cursor-pointer"
                 >
                   Save Preferences
                 </button>

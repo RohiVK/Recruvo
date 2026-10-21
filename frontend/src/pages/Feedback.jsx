@@ -121,7 +121,7 @@ export default function Feedback() {
           <div>
             <label
               htmlFor="feedback-message"
-              className="block text-xs font-semibold text-slate-700 mb-1.5"
+              className="block text-xs font-semibold text-[#263238] mb-1.5"
             >
               Comments
             </label>
@@ -132,7 +132,7 @@ export default function Feedback() {
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               placeholder="Tell us about your experience, report an issue, or suggest an improvement..."
-              className="w-full text-xs rounded-xl p-3.5 border border-slate-300 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-slate-900 focus:ring-1 focus:ring-slate-900 leading-relaxed resize-none"
+              className="w-full text-xs rounded-xl p-3.5 border border-[#CFD8DC] text-[#263238] placeholder-[#90A4AE] focus:outline-none focus:border-[#4CAF4F] focus:ring-1 focus:ring-[#4CAF4F] leading-relaxed resize-none"
             />
           </div>
 
@@ -140,9 +140,9 @@ export default function Feedback() {
           <div>
             <label
               htmlFor="feedback-email"
-              className="block text-xs font-semibold text-slate-700 mb-1.5"
+              className="block text-xs font-semibold text-[#263238] mb-1.5"
             >
-              Email <span className="font-normal text-slate-400">(optional)</span>
+              Email <span className="font-normal text-[#717171]">(optional)</span>
             </label>
             <input
               id="feedback-email"
@@ -150,9 +150,9 @@ export default function Feedback() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@company.com"
-              className="w-full text-xs rounded-xl px-3.5 py-2.5 border border-slate-300 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-slate-900 focus:ring-1 focus:ring-slate-900"
+              className="w-full text-xs rounded-xl px-3.5 py-2.5 border border-[#CFD8DC] text-[#263238] placeholder-[#90A4AE] focus:outline-none focus:border-[#4CAF4F] focus:ring-1 focus:ring-[#4CAF4F]"
             />
-            <p className="text-[11px] text-slate-400 mt-1">
+            <p className="text-[11px] text-[#717171] mt-1">
               We’ll only use this if we need to follow up with you.
             </p>
           </div>
@@ -169,7 +169,7 @@ export default function Feedback() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full sm:w-auto px-5 py-2.5 rounded-xl text-xs font-semibold text-white bg-slate-900 hover:bg-slate-800 transition-colors disabled:opacity-50 cursor-pointer shadow-xs"
+              className="w-full sm:w-auto px-5 py-2.5 rounded-md text-xs font-semibold text-white bg-[#4CAF4F] hover:bg-[#43A047] transition-colors disabled:opacity-50 cursor-pointer shadow-xs"
             >
               {isSubmitting ? "Submitting..." : "Submit feedback"}
             </button>

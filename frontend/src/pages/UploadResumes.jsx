@@ -143,28 +143,16 @@ export default function UploadResumes() {
             className="hidden"
           />
           <label htmlFor="multi-resume-input" className="cursor-pointer block">
-            <div
-              className={`w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4 transition-all ${
-                isGenz
-                  ? "bg-gradient-to-br from-indigo-500/20 to-purple-500/20 text-indigo-400 border border-indigo-500/30 shadow-[0_0_20px_-5px_rgba(99,102,241,0.5)]"
-                  : "bg-slate-100 text-slate-800 border border-slate-200"
-              }`}
-            >
-              <UploadCloud className="w-7 h-7" />
+            <div className="w-14 h-14 rounded-xl flex items-center justify-center mx-auto mb-4 transition-all bg-[#E8F5E9] text-[#2E7D32] border border-[#C8E6C9]">
+              <UploadCloud className="w-7 h-7 text-[#4CAF4F]" />
             </div>
-            <h3 className="text-base font-bold mb-1">
+            <h3 className="text-base font-bold mb-1 text-[#263238]">
               Drag and drop candidate resumes
             </h3>
-            <p className={`text-xs max-w-sm mx-auto mb-4 ${isGenz ? "text-slate-400" : "text-slate-500"}`}>
+            <p className="text-xs max-w-sm mx-auto mb-4 text-[#717171]">
               Multi-file batch processing supported. Select multiple PDF, DOCX, or TXT documents.
             </p>
-            <span
-              className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold border transition-all ${
-                isGenz
-                  ? "bg-white/[0.05] border-white/10 text-slate-200 hover:bg-white/10"
-                  : "bg-white border-slate-200 text-slate-800 hover:bg-slate-100"
-              }`}
-            >
+            <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-xs font-bold border transition-all bg-white border-[#CFD8DC] text-[#263238] hover:bg-[#F5F7FA]">
               Select Resume Files
             </span>
           </label>
@@ -174,12 +162,12 @@ export default function UploadResumes() {
         {selectedFiles.length > 0 && (
           <div className="mt-6 space-y-3">
             <div className="flex items-center justify-between text-xs font-bold">
-              <span className={isGenz ? "text-slate-300" : "text-slate-700"}>
+              <span className="text-[#4D5E80]">
                 Staged for Extraction ({selectedFiles.length} files)
               </span>
               <button
                 onClick={() => setSelectedFiles([])}
-                className="text-rose-500 hover:underline text-[11px]"
+                className="text-[#C62828] hover:underline text-[11px]"
               >
                 Clear All
               </button>
@@ -189,19 +177,15 @@ export default function UploadResumes() {
               {selectedFiles.map((file, idx) => (
                 <div
                   key={idx}
-                  className={`flex items-center justify-between p-2.5 rounded-xl border text-xs ${
-                    isGenz
-                      ? "bg-[#161828] border-white/10 text-slate-200"
-                      : "bg-slate-50 border-slate-200 text-slate-800"
-                  }`}
+                  className="flex items-center justify-between p-2.5 rounded-lg border text-xs bg-[#F5F7FA] border-[#ECEFF1] text-[#263238]"
                 >
                   <div className="flex items-center gap-2 truncate pr-2">
-                    <FileText className="w-4 h-4 text-indigo-400 shrink-0" />
+                    <FileText className="w-4 h-4 text-[#4CAF4F] shrink-0" />
                     <span className="truncate font-medium">{file.name}</span>
                   </div>
                   <button
                     onClick={() => removeSelectedFile(idx)}
-                    className="p-1 rounded text-slate-400 hover:text-rose-400 shrink-0"
+                    className="p-1 rounded text-[#717171] hover:text-[#C62828] shrink-0"
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>
@@ -215,18 +199,16 @@ export default function UploadResumes() {
         {isUploading && uploadProgress && (
           <div className="mt-6 space-y-2">
             <div className="flex justify-between text-xs font-bold">
-              <span className={isGenz ? "text-indigo-300" : "text-slate-700"}>
+              <span className="text-[#2E7D32]">
                 Processing {uploadProgress.current} of {uploadProgress.total}: {uploadProgress.filename}
               </span>
-              <span className="font-mono">
+              <span className="font-mono text-[#2E7D32]">
                 {Math.round((uploadProgress.current / uploadProgress.total) * 100)}%
               </span>
             </div>
-            <div className={`h-2 rounded-full overflow-hidden ${isGenz ? "bg-white/10" : "bg-slate-100"}`}>
+            <div className="h-2 rounded-full overflow-hidden bg-[#ECEFF1]">
               <div
-                className={`h-full rounded-full transition-all duration-300 ${
-                  isGenz ? "bg-gradient-to-r from-indigo-500 to-violet-500" : "bg-slate-900"
-                }`}
+                className="h-full rounded-full transition-all duration-300 bg-[#4CAF4F]"
                 style={{
                   width: `${(uploadProgress.current / uploadProgress.total) * 100}%`,
                 }}
@@ -237,33 +219,21 @@ export default function UploadResumes() {
 
         {/* Error / Success Toast */}
         {errorMessage && (
-          <div
-            className={`mt-4 p-3.5 rounded-xl border text-xs flex items-center gap-2.5 ${
-              isGenz
-                ? "bg-rose-950/40 border-rose-500/40 text-rose-300"
-                : "bg-rose-50 border-rose-200 text-rose-700"
-            }`}
-          >
+          <div className="mt-4 p-3.5 rounded-lg border text-xs flex items-center gap-2.5 bg-[#FFEBEE] border-[#FFCDD2] text-[#C62828]">
             <AlertCircle className="w-4 h-4 shrink-0" />
             <span>{errorMessage}</span>
           </div>
         )}
 
         {successToast && (
-          <div
-            className={`mt-4 p-3.5 rounded-xl border text-xs flex items-center justify-between ${
-              isGenz
-                ? "bg-emerald-950/40 border-emerald-500/40 text-emerald-300"
-                : "bg-emerald-50 border-emerald-200 text-emerald-800"
-            }`}
-          >
+          <div className="mt-4 p-3.5 rounded-lg border text-xs flex items-center justify-between bg-[#E8F5E9] border-[#C8E6C9] text-[#2E7D32]">
             <div className="flex items-center gap-2.5">
-              <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
+              <CheckCircle2 className="w-4 h-4 shrink-0 text-[#4CAF4F]" />
               <span>{successToast}</span>
             </div>
             <button
               onClick={() => navigate("/analysis")}
-              className="font-bold underline text-xs ml-2 flex items-center gap-1 hover:opacity-80"
+              className="font-bold underline text-xs ml-2 flex items-center gap-1 hover:opacity-80 text-[#2E7D32]"
             >
               <span>View Fit & Screen</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -276,11 +246,7 @@ export default function UploadResumes() {
           <button
             onClick={handleUploadAll}
             disabled={isUploading || selectedFiles.length === 0}
-            className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl text-xs font-bold transition-all disabled:opacity-40 shadow-sm ${
-              isGenz
-                ? "bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white shadow-[0_0_20px_-3px_rgba(99,102,241,0.5)]"
-                : "bg-slate-900 text-white hover:bg-black"
-            }`}
+            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-md text-xs font-bold transition-all disabled:opacity-40 shadow-xs bg-[#4CAF4F] text-white hover:bg-[#43A047]"
           >
             {isUploading ? (
               <>

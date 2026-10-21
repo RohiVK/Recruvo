@@ -178,14 +178,10 @@ export default function UploadJD() {
                 setInputMode("upload");
                 setErrorMessage(null);
               }}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
                 inputMode === "upload"
-                  ? isGenz
-                    ? "bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-xs"
-                    : "bg-slate-900 text-white"
-                  : isGenz
-                  ? "text-slate-400 hover:text-white"
-                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                  ? "bg-[#4CAF4F] text-white shadow-xs"
+                  : "text-[#4D5E80] hover:text-[#263238] hover:bg-[#E8F5E9]/50"
               }`}
             >
               Upload JD File (PDF, DOCX, TXT)
@@ -196,14 +192,10 @@ export default function UploadJD() {
                 setInputMode("paste");
                 setErrorMessage(null);
               }}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
                 inputMode === "paste"
-                  ? isGenz
-                    ? "bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-xs"
-                    : "bg-slate-900 text-white"
-                  : isGenz
-                  ? "text-slate-400 hover:text-white"
-                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                  ? "bg-[#4CAF4F] text-white shadow-xs"
+                  : "text-[#4D5E80] hover:text-[#263238] hover:bg-[#E8F5E9]/50"
               }`}
             >
               Paste Requisition Text
@@ -335,11 +327,7 @@ export default function UploadJD() {
           <button
             onClick={handleProcess}
             disabled={isProcessing || (inputMode === "upload" && !selectedFile) || (inputMode === "paste" && !jdText.trim())}
-            className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl text-xs font-bold transition-all disabled:opacity-40 shadow-sm ${
-              isGenz
-                ? "bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white shadow-[0_0_20px_-3px_rgba(99,102,241,0.5)]"
-                : "bg-slate-900 text-white hover:bg-black"
-            }`}
+            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-md text-xs font-bold transition-all disabled:opacity-40 shadow-xs bg-[#4CAF4F] text-white hover:bg-[#43A047]"
           >
             {isProcessing ? (
               <>

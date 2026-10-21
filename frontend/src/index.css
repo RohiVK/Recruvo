@@ -1,5 +1,55 @@
 @import "tailwindcss";
 
+@theme {
+  --color-slate-50: #FAFAFA;
+  --color-slate-100: #F5F7FA;
+  --color-slate-200: #ECEFF1;
+  --color-slate-300: #CFD8DC;
+  --color-slate-400: #90A4AE;
+  --color-slate-500: #717171;
+  --color-slate-600: #546E7A;
+  --color-slate-700: #455A64;
+  --color-slate-800: #37474F;
+  --color-slate-900: #263238;
+  --color-slate-950: #1B2428;
+
+  --color-indigo-50: #E8F5E9;
+  --color-indigo-100: #C8E6C9;
+  --color-indigo-200: #A5D6A7;
+  --color-indigo-300: #81C784;
+  --color-indigo-400: #66BB6A;
+  --color-indigo-500: #4CAF4F;
+  --color-indigo-600: #4CAF4F;
+  --color-indigo-700: #388E3C;
+  --color-indigo-800: #2E7D32;
+  --color-indigo-900: #1B5E20;
+  --color-indigo-950: #0D3E10;
+
+  --color-purple-50: #E8F5E9;
+  --color-purple-100: #C8E6C9;
+  --color-purple-200: #A5D6A7;
+  --color-purple-300: #81C784;
+  --color-purple-400: #66BB6A;
+  --color-purple-500: #4CAF4F;
+  --color-purple-600: #4CAF4F;
+  --color-purple-700: #388E3C;
+  --color-purple-800: #2E7D32;
+  --color-purple-900: #1B5E20;
+  --color-purple-950: #0D3E10;
+
+  --color-violet-50: #E8F5E9;
+  --color-violet-100: #C8E6C9;
+  --color-violet-200: #A5D6A7;
+  --color-violet-300: #81C784;
+  --color-violet-400: #66BB6A;
+  --color-violet-500: #4CAF4F;
+  --color-violet-600: #4CAF4F;
+  --color-violet-700: #388E3C;
+  --color-violet-800: #2E7D32;
+  --color-violet-900: #1B5E20;
+  --color-violet-950: #0D3E10;
+}
+
 @layer base {
   :root,
   [data-theme="classic"],
@@ -8,26 +58,26 @@
     --font-heading: 'Plus Jakarta Sans', 'Inter', sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
 
-    /* Theme Tokens - Classic */
-    --color-bg-app: #F8FAFC;
+    /* Theme Tokens - Nexcent Green & Warm Corporate Slate */
+    --color-bg-app: #F5F7FA;
     --color-bg-surface: #FFFFFF;
     --color-bg-card: #FFFFFF;
-    --color-bg-card-hover: #F1F5F9;
-    --color-bg-muted: #F1F5F9;
-    --color-border-subtle: #E2E8F0;
-    --color-border-strong: #CBD5E1;
-    --color-text-primary: #0F172A;
-    --color-text-secondary: #475569;
-    --color-text-muted: #94A3B8;
-    --color-accent-primary: #0F172A;
-    --color-accent-primary-hover: #020617;
+    --color-bg-card-hover: #F1F8E9;
+    --color-bg-muted: #F5F7FA;
+    --color-border-subtle: #E0E0E0;
+    --color-border-strong: #CFD8DC;
+    --color-text-primary: #263238;
+    --color-text-secondary: #4D5E80;
+    --color-text-muted: #717171;
+    --color-accent-primary: #4CAF4F;
+    --color-accent-primary-hover: #43A047;
     --color-accent-primary-text: #FFFFFF;
-    --color-accent-badge: #F1F5F9;
-    --color-accent-badge-text: #334155;
-    --color-accent-glow: transparent;
-    --color-success-bg: #ECFDF5;
-    --color-success-border: #A7F3D0;
-    --color-success-text: #065F46;
+    --color-accent-badge: #E8F5E9;
+    --color-accent-badge-text: #2E7D32;
+    --color-accent-glow: 0 4px 14px 0 rgba(76, 175, 79, 0.2);
+    --color-success-bg: #E8F5E9;
+    --color-success-border: #C8E6C9;
+    --color-success-text: #2E7D32;
     --color-warning-bg: #FFFBEB;
     --color-warning-border: #FDE68A;
     --color-warning-text: #92400E;
@@ -36,8 +86,8 @@
     --color-danger-text: #991B1B;
     --bento-gradient: none;
     --glass-backdrop: none;
-    --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
-    --shadow-elevated: 0 4px 6px -1px rgba(0, 0, 0, 0.06), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
+    --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.03);
+    --shadow-elevated: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.03);
   }
 
   body {
@@ -95,10 +145,10 @@
 
 @keyframes pulseGlow {
   0%, 100% {
-    box-shadow: 0 0 15px -3px rgba(99, 102, 241, 0.3);
+    box-shadow: 0 0 15px -3px rgba(76, 175, 79, 0.3);
   }
   50% {
-    box-shadow: 0 0 25px 2px rgba(99, 102, 241, 0.5);
+    box-shadow: 0 0 25px 2px rgba(76, 175, 79, 0.5);
   }
 }
 
@@ -135,22 +185,16 @@
 }
 
 .skeleton-shimmer-classic {
-  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background: linear-gradient(90deg, #f5f7fa 25%, #e0e0e0 50%, #f5f7fa 75%);
   background-size: 200% 100%;
   animation: skeleton-shimmer 1.8s ease-in-out infinite;
 }
 
-.skeleton-shimmer-vibe {
-  background: linear-gradient(90deg, rgba(255, 255, 255, 0.03) 25%, rgba(99, 102, 241, 0.14) 50%, rgba(255, 255, 255, 0.03) 75%);
-  background-size: 200% 100%;
-  animation: skeleton-shimmer 1.8s ease-in-out infinite;
-}
-
-/* Dual-Theme Component Utility Classes */
+/* Theme Component Utility Classes */
 .recruvo-card {
   background-color: var(--color-bg-card);
   border: 1px solid var(--color-border-subtle);
-  border-radius: 1rem;
+  border-radius: 0.75rem;
   box-shadow: var(--shadow-card);
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -160,9 +204,9 @@
 }
 
 .recruvo-bento {
-  background: var(--bento-gradient), var(--color-bg-card);
+  background: var(--color-bg-card);
   border: 1px solid var(--color-border-subtle);
-  border-radius: 1.25rem;
+  border-radius: 0.75rem;
   box-shadow: var(--shadow-card);
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
@@ -170,28 +214,17 @@
 }
 
 .recruvo-bento:hover {
-  border-color: var(--color-border-strong);
+  border-color: var(--color-accent-primary);
   transform: translateY(-1px);
-}
-
-[data-theme="vibe"] .recruvo-bento::before,
-[data-theme="genz"] .recruvo-bento::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.5), transparent);
 }
 
 .recruvo-badge {
   background-color: var(--color-accent-badge);
   color: var(--color-accent-badge-text);
-  border: 1px solid var(--color-border-subtle);
+  border: 1px solid var(--color-success-border);
   border-radius: 9999px;
   font-size: 0.75rem;
-  font-weight: 500;
+  font-weight: 600;
   padding: 0.25rem 0.625rem;
   display: inline-flex;
   align-items: center;
@@ -201,7 +234,7 @@
 .recruvo-button-primary {
   background-color: var(--color-accent-primary);
   color: var(--color-accent-primary-text);
-  border-radius: 0.75rem;
+  border-radius: 0.5rem;
   font-weight: 600;
   font-size: 0.8125rem;
   padding: 0.625rem 1rem;
@@ -222,7 +255,7 @@
   background-color: var(--color-bg-muted);
   color: var(--color-text-primary);
   border: 1px solid var(--color-border-subtle);
-  border-radius: 0.75rem;
+  border-radius: 0.5rem;
   font-weight: 600;
   font-size: 0.8125rem;
   padding: 0.625rem 1rem;
@@ -234,15 +267,16 @@
 }
 
 .recruvo-button-secondary:hover {
-  background-color: var(--color-bg-card-hover);
-  border-color: var(--color-border-strong);
+  background-color: #E8F5E9;
+  border-color: #C8E6C9;
+  color: #2E7D32;
 }
 
 .recruvo-input {
-  background-color: var(--color-bg-muted);
+  background-color: #FFFFFF;
   border: 1px solid var(--color-border-subtle);
   color: var(--color-text-primary);
-  border-radius: 0.75rem;
+  border-radius: 0.5rem;
   padding: 0.625rem 0.875rem;
   font-size: 0.8125rem;
   transition: all 0.2s ease;
@@ -251,5 +285,5 @@
 .recruvo-input:focus {
   outline: none;
   border-color: var(--color-accent-primary);
-  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+  box-shadow: 0 0 0 2px rgba(76, 175, 79, 0.2);
 }

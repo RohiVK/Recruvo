@@ -140,14 +140,8 @@ export default function Analysis() {
 
         <div className="flex flex-wrap items-center gap-2.5">
           {activeJob && (
-            <div
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-semibold ${
-                isGenz
-                  ? "bg-indigo-500/10 border-indigo-500/30 text-indigo-300"
-                  : "bg-slate-50 border-slate-200 text-slate-800"
-              }`}
-            >
-              <Briefcase className="w-3.5 h-3.5 opacity-60" />
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-semibold bg-[#E8F5E9] border-[#C8E6C9] text-[#2E7D32]">
+              <Briefcase className="w-3.5 h-3.5 text-[#4CAF4F]" />
               <span>Target: {activeJob.job_description?.title || "Active Job"}</span>
             </div>
           )}
@@ -155,13 +149,9 @@ export default function Analysis() {
           {candidateMatchList.length > 0 && (
             <button
               onClick={() => exportResultsCSV({ candidates, screenings, job: activeJob })}
-              className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold border transition-all ${
-                isGenz
-                  ? "bg-white/[0.04] border-white/10 text-slate-200 hover:bg-white/10"
-                  : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
-              }`}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-md text-xs font-bold border transition-all bg-white border-[#CFD8DC] text-[#263238] hover:bg-[#F5F7FA] cursor-pointer"
             >
-              <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-500" />
+              <FileSpreadsheet className="w-3.5 h-3.5 text-[#4CAF4F]" />
               <span>Export CSV</span>
             </button>
           )}
@@ -169,11 +159,7 @@ export default function Analysis() {
           <button
             onClick={handleRunAllScreenings}
             disabled={isBatchRunning || candidates.length === 0}
-            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all disabled:opacity-40 shadow-sm ${
-              isGenz
-                ? "bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white shadow-[0_0_20px_-3px_rgba(99,102,241,0.5)]"
-                : "bg-slate-900 text-white hover:bg-black"
-            }`}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-md text-xs font-bold transition-all disabled:opacity-40 shadow-xs bg-[#4CAF4F] text-white hover:bg-[#43A047] cursor-pointer"
           >
             {isBatchRunning ? (
               <>
