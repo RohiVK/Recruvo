@@ -1,218 +1,158 @@
-# Recruvo — Smarter Hiring. Brighter Teams.
+# Recruvo
 
-![Recruvo Banner](https://raw.githubusercontent.com/RohiVK/Recruvo/main/frontend/public/favicon.svg)
+Recruvo is a recruitment screening application for reviewing candidate resumes against job descriptions. It combines document parsing, AI-assisted evaluation, candidate comparison, and report exports in a single workspace.
 
-> **Recruvo** is an AI-powered candidate screening and recruitment intelligence platform designed to eliminate hiring friction. Grounded strictly in job description requirements and verified candidate profiles, Recruvo empowers recruiters with multi-dimensional match scoring, side-by-side candidate comparisons, tailored interview question generation, and contextual AI decision support.
+## Features
 
----
+- **Job descriptions:** Upload PDF, DOCX, or TXT files, or paste text. Review and edit extracted requirements and select an active job.
+- **Candidate management:** Upload resumes in batches and review structured contact details, skills, experience, education, and projects.
+- **Screening:** Evaluate technical skills, experience, education, and project relevance, with an overall job-match score, skill gaps, strengths, and interview questions.
+- **Candidate details:** Navigate between overview, skills, experience, education and projects, and interview preparation tabs.
+- **Comparison:** Review two candidates side by side against the selected job description.
+- **Contextual assistant:** Ask questions using job and candidate records. Heuristic fallbacks support some operations when Gemini is unavailable.
+- **Reports:** Export individual candidate and comparison reports as PDF, or download screening results as CSV.
+- **User interface:** A public landing page and responsive recruiter workspace with consistent green accents, task-based navigation, and inline feedback.
+- **Workspace tools:** Configure the Gemini key, refresh data, clear local session state, and submit feedback.
 
-## 🌟 Key Features
-
-### 0. 🎨 Dual-Theme Visual Identity (CLASSIC ◐ GEN-Z)
-- **Instant Global Toggle:** Switch themes instantly with zero page reload via the header toggle or Settings tab.
-- **CLASSIC Theme:** Clean, professional, minimal, recruiter-friendly with crisp slate/white surfaces, high readability, and Notion/Linear aesthetic.
-- **GEN-Z Theme:** Modern AI-native developer aesthetic with dark obsidian surfaces (`#08090E`), glowing accents, bento layouts, oversized statistics, radial score rings, and subtle gradient trims inspired by modern AI startup interfaces.
-- **Persistent Preference:** Remembers user visual selection across browser sessions via `localStorage`.
-
-### 1. 📋 Job Description Intelligence
-- **Multi-Format Upload:** Upload JDs in **PDF**, **DOCX**, or **TXT** format, or paste raw job requisitions.
-- **Structured AI Extraction:** Automatically extracts job title, hiring company, location, experience requirements, required skills, preferred qualifications, and core responsibilities.
-- **Full Requisition Management:** Live interactive editing of JD fields and delete capabilities with automatic cascade cleanup of obsolete screening data.
-
-### 2. 📄 Resume Parsing & Candidate Roster
-- **Batch Processing:** Upload multiple candidate resumes simultaneously (PDF, DOCX, TXT).
-- **Deep Profile Extraction:** Accurately extracts candidate contact info, technical skills, chronological work experience, educational history, certifications, and project portfolios.
-- **Candidate Management:** Individual candidate profile inspection and deletion with real-time roster updates.
-
-### 3. 🎯 Multi-Dimensional AI Screening
-- **Multi-Factor Scoring Matrix:** Evaluates candidates across five distinct pillars:
-  - **Technical Competency Fit**
-  - **Experience & Seniority Alignment**
-  - **Educational Background**
-  - **Project Relevance**
-  - **Overall JD Match Percentage**
-- **Gap & Strength Analysis:** Explicitly identifies matching verified competencies vs. flagged missing skills from the Job Description.
-- **Tailored Interview Framework:** Generates customized technical and behavioral interview questions targeted at probing candidate gap areas.
-
-### 4. 🔍 Candidate Deep-Dive (5-Pillar View)
-- **Overview:** Match score gauge, executive AI summary, contact info, and quick recommendation.
-- **Skills Matrix:** Side-by-side comparison of verified candidate skills vs. JD required/preferred skills.
-- **Experience Timeline:** Detailed roles, companies, durations, and project descriptions.
-- **Education:** Academic qualifications, institutions, and graduation years.
-- **Recommendations & Interview Prep:** Actionable recruiter notes and numbered interview questions.
-
-### 5. ⚖️ Side-by-Side Candidate Comparison
-- **Direct 2-Candidate Evaluation:** Select any two candidates from your roster for an instant head-to-head comparison matrix.
-- **Trade-off Analysis:** Compares overall match, technical fit, experience, strengths, and gap areas to assist final hiring decisions.
-- **Contextual Comparison AI:** Dedicated prompt suggestions for comparing technical depth, seniority, and skill tradeoffs.
-
-### 6. 🤖 Contextual Recruvo AI Decision Assistant
-- **Strict Grounding & Anti-Hallucination:** Answers strictly using the uploaded JD and candidate resume records.
-- **Contextual Integration:** Seamlessly integrated into Candidate Analysis, Results Table, and Comparison pages (never cluttering main navigation).
-- **Resilient Fallback Engine:** Guarantees instant decision assistance with rich domain heuristics even under API rate limits.
-- **Clean Typography:** Zero raw markdown clutter — outputs styled dot bullets, numbered lists, and bold headers.
-
-### 7. 📥 Multi-Format Export Engine
-- **Single Candidate PDF Report:** Professional PDF report with candidate match scores, skills breakdown, summary, and interview focus areas.
-- **Candidate Comparison PDF:** Side-by-side comparison matrix formatted with tables and trade-off insights.
-- **Complete Results CSV:** Full candidate dataset export for spreadsheet analysis.
-
-### 8. ⚙️ Workspace & Data Control
-- **Embedded PostgreSQL (PGlite):** Runs immediately without requiring external database installation.
-- **External PostgreSQL Support:** Connects seamlessly to production PostgreSQL instances via `DATABASE_URL`.
-- **Cache & Session Reset:** One-click workspace cache wipe and data refresh.
-- **Recruiter Feedback System:** Built-in 5-star rating, suggestion box, and bug report submission.
-
----
-
-## 🛠️ Technology Stack
+## Technology Stack
 
 | Layer | Technologies |
-| :--- | :--- |
-| **Frontend Framework** | React 19, React Router v7, Vite 8 |
-| **Styling & Icons** | Tailwind CSS v4, Lucide React Icons |
-| **Export Engines** | jsPDF, jspdf-autotable, CSV exporter |
-| **Backend Runtime** | Node.js (ES Modules), Express 5 |
-| **Database Engine** | Embedded PGlite (PostgreSQL WebAssembly) / PostgreSQL (`pg`) |
-| **AI Decision Engine** | Google Gen AI SDK (`@google/genai` with `gemini-3.6-flash`) |
-| **Document Parsers** | Multer (Multipart Memory Storage), `pdf-parse`, `mammoth` (DOCX) |
+| --- | --- |
+| Frontend | React 19, React Router 8, Vite 8 |
+| Styling | Tailwind CSS 4, Lucide React |
+| Backend | Node.js, Express 5 |
+| Database | Embedded PGlite or external PostgreSQL |
+| AI integration | Google Gen AI SDK |
+| Document processing | Multer, pdf-parse, Mammoth |
+| Reports | jsPDF, jspdf-autotable, CSV export |
 
----
+## Getting Started
 
-## 📁 Repository Structure
+### Requirements
 
-```
-Recruvo/
-├── backend/
-│   ├── config/
-│   │   ├── db.js                 # PGlite & PostgreSQL connection wrapper
-│   │   └── gemini.js             # Google Gemini AI client configuration
-│   ├── controllers/
-│   │   ├── chat.controller.js    # Grounded contextual AI chat & fallback engine
-│   │   ├── feedback.controller.js# User feedback & bug report handling
-│   │   ├── job_description.controller.js # JD upload, extraction, update & delete
-│   │   ├── resume.controller.js  # Resume extraction (PDF/DOCX) & candidate CRUD
-│   │   ├── screening.controller.js # Multi-dimensional AI candidate screening
-│   │   └── settings.controller.js# System health & cache status
-│   ├── models/
-│   │   ├── gemini.schemas.js     # Structured JSON schemas for Gemini
-│   │   ├── job_description.schema.js # PostgreSQL Job Description model
-│   │   ├── resume.model.js       # PostgreSQL Resume model
-│   │   └── screening.schema.js   # PostgreSQL Screening & evaluation model
-│   ├── routes/                   # Express REST API route definitions
-│   ├── index.js                  # Express application entrypoint
-│   └── package.json
-│
-├── frontend/
-│   ├── src/
-│   │   ├── api/                  # API clients (chat, jobs, resumes, screenings, exports)
-│   │   ├── components/
-│   │   │   ├── ai/               # RecruvoAIChat contextual widget
-│   │   │   └── layout/           # AppShell, Sidebar, Header, Global Command Palette
-│   │   ├── context/              # RecruvoContext state management
-│   │   ├── pages/                # Dashboard, UploadJD, UploadResumes, Analysis,
-│   │   │                         # CandidateAnalysis, CompareCandidates, Export, Settings, Feedback
-│   │   ├── App.jsx               # Application routing & layout
-│   │   ├── main.jsx              # React DOM root
-│   │   └── index.css             # Tailwind CSS design system tokens
-│   ├── index.html
-│   ├── vite.config.js
-│   └── package.json
-│
-└── README.md
-```
+- Node.js 22.22.0 or later, compatible with the dependencies in the lockfiles.
+- npm.
+- A Gemini API key for Gemini-backed parsing, screening, and assistant responses.
+- PostgreSQL only if using an external database; embedded PGlite is the default.
 
----
+### 1. Clone and install
 
-## 🚀 Quick Start Guide
-
-### Prerequisites
-- **Node.js**: v18.0.0 or higher
-- **npm**: v9.0.0 or higher
-- **Google Gemini API Key**: [Get a Gemini API key](https://aistudio.google.com/app/apikey)
-
----
-
-### Step 1: Clone the Repository
 ```bash
 git clone https://github.com/RohiVK/Recruvo.git
 cd Recruvo
+npm ci
+npm ci --prefix backend
+npm ci --prefix frontend
 ```
 
----
+### 2. Configure the backend
 
-### Step 2: Configure Environment Variables
+Create `backend/.env`:
 
-Create a `.env` file inside the `backend/` directory:
-```bash
-cd backend
-```
-
-Add the following configuration to `backend/.env`:
 ```env
 PORT=3000
-GEMINI_API_KEY=your_actual_gemini_api_key_here
+GEMINI_API_KEY=your_gemini_api_key
 
-# Optional: External PostgreSQL connection (leave blank to use embedded PGlite)
+# Optional: use external PostgreSQL instead of embedded PGlite.
 # DATABASE_URL=postgresql://username:password@localhost:5432/recruvo_db
 ```
 
----
+The embedded database stores data in `backend/hirely_pgdata/` when the backend runs from its directory. A Gemini key can also be configured through the workspace Settings page. Keep API keys out of version control.
 
-### Step 3: Install Dependencies & Run
+The frontend uses `http://localhost:3000` for API requests. To change it, create `frontend/.env`:
 
-#### Terminal 1 — Start the Backend Server:
+```env
+VITE_BACKEND_URL=http://localhost:3000
+```
+
+### 3. Run the application
+
+From the repository root:
+
 ```bash
-cd backend
-npm install
 npm run dev
 ```
-*Backend server will start at `http://localhost:3000`.*
 
-#### Terminal 2 — Start the Frontend Application:
+Alternatively, run the backend and frontend in separate terminals from the repository root:
+
 ```bash
-cd frontend
-npm install
-npm run dev
+npm run start:backend
 ```
-*Frontend application will be available at `http://localhost:5173`.*
 
----
+```bash
+npm run start:frontend
+```
 
-## 📡 REST API Reference
+- Frontend: `http://localhost:5173`
+- Backend health check: `http://localhost:3000/health`
 
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| `GET` | `/health` | Health check returning status of server, database, and Gemini |
-| `POST` | `/api/job-descriptions` | Parse and store raw text Job Description |
-| `POST` | `/api/job-descriptions/upload` | Upload and parse JD file (PDF, DOCX, TXT) |
-| `GET` | `/api/job-descriptions` | List all active Job Descriptions |
-| `GET` | `/api/job-descriptions/:id` | Get specific Job Description |
-| `PUT` | `/api/job-descriptions/:id` | Update Job Description fields |
-| `DELETE` | `/api/job-descriptions/:id` | Delete Job Description and cascade screenings |
-| `POST` | `/api/resumes` | Batch upload and parse candidate resumes (PDF, DOCX, TXT) |
-| `GET` | `/api/resumes` | List all uploaded candidate profiles |
-| `GET` | `/api/resumes/:id` | Get candidate profile by ID |
-| `DELETE` | `/api/resumes/:id` | Delete candidate resume and cascade screenings |
-| `POST` | `/api/screenings` | Screen candidate against JD and generate scores |
-| `GET` | `/api/screenings` | Fetch screening results (supports `?resumeId=` and `?jdId=`) |
-| `POST` | `/api/chat` | Send grounded query to Recruvo AI contextual assistant |
-| `POST` | `/api/feedback` | Submit user feedback or bug report |
+### 4. Use the workspace
 
----
+1. Open the landing page and use Quick Demo Login to enter the workspace.
+2. Upload or paste a job description and select it as the active role.
+3. Upload candidate resumes and run screening from Analysis.
+4. Review candidate details, compare profiles, and export reports.
 
-## 🔒 Security & Anti-Hallucination Guardrails
+Sample resumes are available in `sample_resumes/`.
 
-- **Strict Source Distinction:** Recruvo explicitly separates candidate resume facts from Job Description requirements and AI evaluations.
-- **Unverified Information Handling:** If requested information is absent from candidate documents, Recruvo AI explicitly states that the data cannot be verified.
-- **Local Embedded Storage:** In default mode, candidate records and screening scores remain securely persisted within local embedded PostgreSQL (`PGlite`).
+### Frontend build
 
----
+```bash
+npm run build --prefix frontend
+npm run preview --prefix frontend
+```
 
-## 📄 License
+The frontend build is written to `frontend/dist/`. The backend must run separately for API requests.
 
-This project is licensed under the **MIT License**.
+## Repository Structure
 
----
+```text
+Recruvo/
+|-- backend/
+|   |-- config/          # Database and Gemini configuration
+|   |-- controllers/     # Document processing and application logic
+|   |-- models/          # Database access and structured schemas
+|   |-- routes/          # Express API routes
+|   `-- index.js         # Backend entry point
+|-- frontend/
+|   `-- src/
+|       |-- api/         # API clients and report exports
+|       |-- components/  # Layout, UI, and assistant components
+|       |-- context/     # Shared application state
+|       |-- pages/       # Landing page and workspace screens
+|       |-- App.jsx      # Routing
+|       `-- index.css    # Shared styles and design tokens
+|-- sample_resumes/
+`-- README.md
+```
 
-*“Smarter Hiring. Brighter Teams.”* — **Recruvo**
+## API Reference
+
+| Method | Endpoint | Purpose |
+| --- | --- | --- |
+| `GET` | `/health` | Server, database, and Gemini status |
+| `GET`, `POST` | `/api/job-descriptions` | List jobs or parse a job description from text |
+| `POST` | `/api/job-descriptions/upload` | Upload a job description file |
+| `GET`, `PUT`, `DELETE` | `/api/job-descriptions/:id` | Read, update, or delete a job |
+| `GET`, `POST` | `/api/resumes` | List candidates or upload resume files |
+| `GET`, `PUT`, `DELETE` | `/api/resumes/:id` | Read, update, or delete a candidate |
+| `GET`, `POST` | `/api/screenings` | List evaluations or screen a candidate against a job |
+| `GET`, `PUT`, `DELETE` | `/api/screenings/:id` | Read, update, or delete an evaluation |
+| `POST` | `/api/chat` | Query the contextual assistant |
+| `POST` | `/api/feedback` | Submit feedback or a bug report |
+| `GET` | `/api/settings` | Read API configuration status |
+| `POST` | `/api/settings/gemini-key` | Update the Gemini API key |
+
+Screening results can be filtered using `resume_id` and `jd_id`, for example: `/api/screenings?resume_id=1&jd_id=2`. Resume uploads use the multipart field `files`; job description uploads use `file`.
+
+## Implementation Notes
+
+- The current interface uses a fixed green theme; theme switching is not enabled.
+- Login and registration are frontend demonstrations using local browser state. They do not provide production authentication or API access control.
+- AI-generated scores, summaries, and extracted information require human review. Heuristic fallback output is not equivalent to a Gemini evaluation.
+- Document contents are processed by the backend and may be sent to Gemini when AI processing is configured. Embedded storage does not mean all processing stays on the device.
+
+## Contributors
+
+- [RohiVK](https://github.com/RohiVK)
+- [5uhaeb](https://github.com/5uhaeb)
